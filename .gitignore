@@ -1,6 +1,5 @@
 *.rbc
 *.fyc
-Smoke/Smoke
 Smoke/GLUT
 Smoke/library
 Smoke/FFTW
