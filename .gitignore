@@ -1,2 +1,10 @@
 *.rbc
 *.fyc
+Smoke/Smoke
+Smoke/GLUT
+Smoke/library
+Smoke/FFTW
+Smoke/fftw-2.1.3
+Smoke/README_files
+Smoke/Release
+Smoke/Backup
