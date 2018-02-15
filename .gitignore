@@ -1,5 +1,3 @@
-*.rbc
-*.fyc
 Smoke/GLUT
 Smoke/library
 Smoke/FFTW
@@ -10,3 +8,4 @@ Smoke/Backup
 Smoke/*.pdb
 Smoke/*.exe
 Smoke/*.ipdb
+Smoke/.vs

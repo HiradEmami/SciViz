@@ -24,14 +24,15 @@ int   color_dir = 0;            //use direction color-coding or not
 float vec_scale = 1000;			//scaling of hedgehogs
 int   draw_smoke = 0;           //draw the smoke or not
 int   draw_vecs = 1;            //draw the vector field or not
-const int COLOR_BLACKWHITE=0;   //different types of color mapping: black-and-white, rainbow, banded
-const int COLOR_RAINBOW=1;
-const int COLOR_BANDS=2;
-const int COLOR_GRAYSCALE = 3;
-const int COLOR_HEATMAP = 4;
-const int COLOR_BLUETORED = 5;
-int   scalar_col = 0;           //method for scalar coloring
-int   frozen = 0;               //toggles on/off the animation
+const int COLOR_BLACKWHITE=0;   //different types of color mapping: black-and-white, grayscale, rainbow, banded
+const int COLOR_GRAYSCALE = 1;
+const int COLOR_RAINBOW=2;
+const int COLOR_BANDS=3;
+//const int COLOR_HEATMAP = 4;
+//const int COLOR_BLUETORED = 5;
+int   scalar_col = COLOR_BLACKWHITE;   //set initial colormap to black and white
+									   //method for scalar coloring
+int   frozen = 0;					   //toggles on/off the animation
 
 
 
@@ -204,10 +205,11 @@ void rainbow(float value,float* R,float* G,float* B)
    *B = fmax(0.0,(3-fabs(value-1)-fabs(value-2))/2);
 }
 void grayscale(float value, float* R, float* G, float* B)
-{		
-	*R = (R + G + B) / 3;
-	*G = (R + G + B) / 3;
-	*B = (R + G + B) / 3;
+{	
+	if (value<0) value = 0; if (value>1) value = 1;
+	value = value / 3;
+	*R = *G = *B = value; 
+	
 }
 
 void heatmap(float value, float* R, float* G, float* B)
@@ -233,9 +235,10 @@ void bluetoread(float value, float* R, float* G, float* B)
 void set_colormap(float vy)
 {
    float R,G,B; 
-
    if (scalar_col==COLOR_BLACKWHITE)
        R = G = B = vy;
+   else if (scalar_col == COLOR_GRAYSCALE)
+	   grayscale(vy, &R, &G, &B);
    else if (scalar_col==COLOR_RAINBOW)
        rainbow(vy,&R,&G,&B); 
    else if (scalar_col==COLOR_BANDS)
@@ -244,12 +247,7 @@ void set_colormap(float vy)
           vy *= NLEVELS; vy = (int)(vy); vy/= NLEVELS; 
 	      rainbow(vy,&R,&G,&B);   
 	   }
-   else if (scalar_col == COLOR_BLUETORED)
-	   rainbow(vy, &R, &G, &B);
-   else if (scalar_col == COLOR_GRAYSCALE)
-	   rainbow(vy, &R, &G, &B);
-   else if (scalar_col == COLOR_HEATMAP)
-	   rainbow(vy, &R, &G, &B);
+   
    
    glColor3f(R,G,B);
 }
@@ -383,7 +381,7 @@ void keyboard(unsigned char key, int x, int y)
 		    if (draw_smoke==0) draw_vecs = 1; break;
 	  case 'y': draw_vecs = 1 - draw_vecs; 
 		    if (draw_vecs==0) draw_smoke = 1; break;
-	  case 'm': scalar_col++; if (scalar_col>COLOR_BANDS) scalar_col=COLOR_BLACKWHITE; break;
+	  case 'm': scalar_col++; if (scalar_col>COLOR_BANDS) scalar_col= COLOR_BLACKWHITE; break;
 	  case 'a': frozen = 1-frozen; break;
 	  case 'q': exit(0);
 	}
