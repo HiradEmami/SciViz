@@ -26,7 +26,7 @@ int   draw_vecs = 1;            //draw the vector field or not
 const int COLOR_BLACKWHITE = 0;   //different types of color mapping: black-and-white, grayscale, rainbow, banded
 const int COLOR_GRAYSCALE = 1;
 const int COLOR_RAINBOW = 2;
-const int COLOR_HEATMAP = 3;
+const int COLOR_TWO_COLOR = 3;
 const int COLOR_BANDS = 4;
 
 int scalar_col = COLOR_BLACKWHITE;   //set initial colormap to black and white
@@ -212,17 +212,19 @@ void grayscale(float value, float* R, float* G, float* B)
 	*R = *G = *B = value; 
 }
 
-void heatmap(float value, float* R, float* G, float* B)
+void two_color(float value, float* R, float* G, float* B)
 {
-	*R = value;
-	*G = value * value/3;
-	*B = 0;
+	
+	*R = 1.0 * (value);
+	*G = 1.0 * (value);
+	*B = 1.0 * (1.0 - value);
 }
 
 void blackwhite(float value, float* R, float* G, float* B)
 {
 	*R = *G = *B = value;
 }
+
 //set_colormap: Sets different types of colormaps
 void set_colormap(float vy)
 {
@@ -233,8 +235,8 @@ void set_colormap(float vy)
 	   grayscale(vy, &R, &G, &B);
    else if (scalar_col==COLOR_RAINBOW)
        rainbow(vy,&R,&G,&B); 
-   else if (scalar_col == COLOR_HEATMAP) {
-	   heatmap(vy, &R, &G, &B);
+   else if (scalar_col == COLOR_TWO_COLOR) {
+	   two_color(vy, &R, &G, &B);
    }
    else if (scalar_col==COLOR_BANDS)
        {  
@@ -283,8 +285,8 @@ void compute_RGB(float value, float* R, float* G, float* B) {
 	case COLOR_RAINBOW:
 		rainbow(value, R, G, B);
 		break;
-	case COLOR_HEATMAP:
-		heatmap(value, R, G, B);
+	case COLOR_TWO_COLOR:
+		two_color(value, R, G, B);
 		break;
 	}
 
@@ -423,7 +425,7 @@ void keyboard(unsigned char key, int x, int y)
 		    if (draw_smoke==0) draw_vecs = 1; break;
 	  case 'y': draw_vecs = 1 - draw_vecs; 
 		    if (draw_vecs==0) draw_smoke = 1; break;
-	  case 'm': scalar_col++; if (scalar_col>COLOR_HEATMAP) scalar_col= COLOR_BLACKWHITE; break;
+	  case 'm': scalar_col++; if (scalar_col>COLOR_TWO_COLOR) scalar_col= COLOR_BLACKWHITE; break;
 	  case 'a': frozen = 1-frozen; break;
 	  case 'q': exit(0);
 	}
