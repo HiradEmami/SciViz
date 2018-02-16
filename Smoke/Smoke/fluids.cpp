@@ -26,9 +26,9 @@ int   draw_vecs = 1;            //draw the vector field or not
 const int COLOR_BLACKWHITE = 0;   //different types of color mapping: black-and-white, grayscale, rainbow, banded
 const int COLOR_GRAYSCALE = 1;
 const int COLOR_RAINBOW = 2;
-const int COLOR_BANDS = 3;
-//const int COLOR_HEATMAP = 4;
-//const int COLOR_BLUETORED = 5;
+const int COLOR_HEATMAP = 3;
+const int COLOR_BANDS = 4;
+
 int scalar_col = COLOR_BLACKWHITE;   //set initial colormap to black and white
 									 //method for scalar coloring
 int frozen = 0;					   //toggles on/off the animation
@@ -205,38 +205,45 @@ void rainbow(float value,float* R,float* G,float* B)
    *B = fmax(0.0,(3-fabs(value-1)-fabs(value-2))/2);
 }
 void grayscale(float value, float* R, float* G, float* B)
-{	
+{
+	
 	if (value<0) value = 0; if (value>1) value = 1;
 	value = value / 3;
 	*R = *G = *B = value; 
-
-	
 }
 
 void heatmap(float value, float* R, float* G, float* B)
 {
-	
+	const float dx = 0.3;
+	if (value<0) value = 0; if (value>1) value = 1;
+	value = (6 - 2 * dx)*value + dx;
+	*R = fmax(0.0, (4 - fabs(value - 2) - fabs(value - 4)) / 2);
+	*G = 0;
+	*B = 0;
 }
 
-void bluetoread(float value, float* R, float* G, float* B)
+void blackwhite(float value, float* R, float* G, float* B)
 {
-	
+	*R = *G = *B = value;
 }
-//set_colormap: Sets three different types of colormaps
+//set_colormap: Sets different types of colormaps
 void set_colormap(float vy)
 {
    float R,G,B; 
-   if (scalar_col==COLOR_BLACKWHITE)
-       R = G = B = vy;
+   if (scalar_col == COLOR_BLACKWHITE)
+	   blackwhite(vy, &R, &G, &B);
    else if (scalar_col == COLOR_GRAYSCALE)
 	   grayscale(vy, &R, &G, &B);
    else if (scalar_col==COLOR_RAINBOW)
        rainbow(vy,&R,&G,&B); 
+   else if (scalar_col == COLOR_HEATMAP) {
+	   heatmap(vy, &R, &G, &B);
+   }
    else if (scalar_col==COLOR_BANDS)
        {  
           const int NLEVELS = 7;
           vy *= NLEVELS; vy = (int)(vy); vy/= NLEVELS; 
-	      rainbow(vy,&R,&G,&B);   
+	      rainbow(vy,&R,&G,&B); 
 	   }
    
    
@@ -265,6 +272,49 @@ void direction_to_color(float x, float y, int method)
 	else
 	{ r = g = b = 1; }
 	glColor3f(r,g,b);
+}
+
+//compute the rgb values given the current segment and the current colormap
+void compute_RGB(float value, float* R, float* G, float* B) {
+	switch (scalar_col) {
+	case COLOR_BLACKWHITE:
+		blackwhite(value, R, G, B);
+		break;
+	case COLOR_GRAYSCALE:
+		grayscale(value, R, G, B);
+		break;
+	case COLOR_RAINBOW:
+		rainbow(value, R, G, B);
+		break;
+	case COLOR_HEATMAP:
+		heatmap(value, R, G, B);
+		break;
+	}
+
+
+}
+//draw a colorbar with the currently selected colormap
+void draw_colorbar() {
+	//the amount of 'strips'
+	int segments = 50;
+	float R, G, B, value;
+	//each 'strip' has the same height and width
+	float segment_height = winHeight / segments;
+	
+	glBegin(GL_QUAD_STRIP);
+	for (int i = 0; i < segments + 1; i++) {
+		//the value is in the range [0,1], computed by block number / N
+		value = (float)i / (float)segments;
+		//compute the RGB values using the value of the current strip and the current colormap
+		compute_RGB(value, &R, &G, &B);
+		glColor3f(R, G, B);
+		//draw the strips with two vertices
+		glVertex2f(winWidth - colorbar_width, i*segment_height);
+		glVertex2f(winWidth, i*segment_height);	
+	}
+
+	glEnd();
+	
 }
 
 //visualize: This is the main visualization function
@@ -331,21 +381,8 @@ void visualize(void)
 		glEnd();
 	}
 	//draw color bar
-
-	colorbar_height = winHeight;
-	glBegin(GL_QUAD_STRIP);
-		glColor3f(0,0,255);
-		glVertex2f(winWidth - colorbar_width, 0.0f);
-		glVertex2f(winWidth, 0.0f);
-
-		glColor3f(0, 255, 0);
-		glVertex2f(winWidth - colorbar_width, winHeight / 2);
-		glVertex2f(winWidth, winHeight / 2);
-		
-		glColor3f(255,0,0);
-		glVertex2f(winWidth - colorbar_width, winHeight);
-		glVertex2f(winWidth, winHeight);
-	glEnd();
+	draw_colorbar();
+	
 }
 
 
