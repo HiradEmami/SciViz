@@ -3,9 +3,8 @@
 //-------------------------------------------------------------------------------------------------- 
 
 #include <rfftw.h>              //the numerical simulation Rlibrary
-#include <GL/glut.h>            //the GLUT graphics library
-#include <stdio.h>              //for printing the help text
-#include <iostream>
+#include <GL/glut.h>            //the GLUT graphics library       
+#include <iostream>				//for printing the help text
 
 //--- SIMULATION PARAMETERS ------------------------------------------------------------------------
 const int DIM = 50;				//size of simulation grid
@@ -24,16 +23,17 @@ int   color_dir = 0;            //use direction color-coding or not
 float vec_scale = 1000;			//scaling of hedgehogs
 int   draw_smoke = 0;           //draw the smoke or not
 int   draw_vecs = 1;            //draw the vector field or not
-const int COLOR_BLACKWHITE=0;   //different types of color mapping: black-and-white, grayscale, rainbow, banded
+const int COLOR_BLACKWHITE = 0;   //different types of color mapping: black-and-white, grayscale, rainbow, banded
 const int COLOR_GRAYSCALE = 1;
-const int COLOR_RAINBOW=2;
-const int COLOR_BANDS=3;
+const int COLOR_RAINBOW = 2;
+const int COLOR_BANDS = 3;
 //const int COLOR_HEATMAP = 4;
 //const int COLOR_BLUETORED = 5;
-int   scalar_col = COLOR_BLACKWHITE;   //set initial colormap to black and white
-									   //method for scalar coloring
-int   frozen = 0;					   //toggles on/off the animation
-
+int scalar_col = COLOR_BLACKWHITE;   //set initial colormap to black and white
+									 //method for scalar coloring
+int frozen = 0;					   //toggles on/off the animation
+float colorbar_width = 50;
+int colorbar_height;
 
 
 //------ SIMULATION CODE STARTS HERE -----------------------------------------------------------------
@@ -209,27 +209,18 @@ void grayscale(float value, float* R, float* G, float* B)
 	if (value<0) value = 0; if (value>1) value = 1;
 	value = value / 3;
 	*R = *G = *B = value; 
+
 	
 }
 
 void heatmap(float value, float* R, float* G, float* B)
 {
-	const float dx = 0.8;
-	if (value<0) value = 0; if (value>1) value = 1;
-	value = (6 - 2 * dx)*value + dx;
-	*R = fmax(0.0, (3 - fabs(value - 4) - fabs(value - 5)) / 2);
-	*G = fmax(0.0, (4 - fabs(value - 2) - fabs(value - 4)) / 2);
-	*B = fmax(0.0, (3 - fabs(value - 1) - fabs(value - 2)) / 2);
+	
 }
 
 void bluetoread(float value, float* R, float* G, float* B)
 {
-	const float dx = 0.8;
-	if (value<0) value = 0; if (value>1) value = 1;
-	value = (6 - 2 * dx)*value + dx;
-	*R = fmax(0.0, (3 - fabs(value - 4) - fabs(value - 5)) / 2);
-	*G = fmax(0.0, (4 - fabs(value - 2) - fabs(value - 4)) / 2);
-	*B = fmax(0.0, (3 - fabs(value - 1) - fabs(value - 2)) / 2);
+	
 }
 //set_colormap: Sets three different types of colormaps
 void set_colormap(float vy)
@@ -281,7 +272,7 @@ void visualize(void)
 {
 	int        i, j, idx;
 	fftw_real  wn = (fftw_real)winWidth / (fftw_real)(DIM + 1);   // Grid cell width
-	fftw_real  hn = (fftw_real)winHeight / (fftw_real)(DIM + 1);  // Grid cell heigh
+	fftw_real  hn = (fftw_real)winHeight / (fftw_real)(DIM + 1);  // Grid cell height
 
 	if (draw_smoke)
 	{	
@@ -325,7 +316,7 @@ void visualize(void)
 		}
 		glEnd();
 	}
-
+	
 	if (draw_vecs)
 	{
 		glBegin(GL_LINES);				//draw velocities
@@ -339,6 +330,22 @@ void visualize(void)
 			}
 		glEnd();
 	}
+	//draw color bar
+
+	colorbar_height = winHeight;
+	glBegin(GL_QUAD_STRIP);
+		glColor3f(0,0,255);
+		glVertex2f(winWidth - colorbar_width, 0.0f);
+		glVertex2f(winWidth, 0.0f);
+
+		glColor3f(0, 255, 0);
+		glVertex2f(winWidth - colorbar_width, winHeight / 2);
+		glVertex2f(winWidth, winHeight / 2);
+		
+		glColor3f(255,0,0);
+		glVertex2f(winWidth - colorbar_width, winHeight);
+		glVertex2f(winWidth, winHeight);
+	glEnd();
 }
 
 
@@ -444,5 +451,5 @@ int main(int argc, char **argv)
 	
 	init_simulation(DIM);	//initialize the simulation data structures	
 	glutMainLoop();			//calls do_one_simulation_step, keyboard, display, drag, reshape
-	return 0;
+	return 0;  
 }
