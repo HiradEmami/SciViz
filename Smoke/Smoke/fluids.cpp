@@ -302,7 +302,7 @@ void draw_colorbar() {
 	float segment_height = winHeight / segments;
 	
 	glBegin(GL_QUAD_STRIP);
-	for (int i = 0; i < segments; i++) {
+	for (int i = 0; i < segments + 1; i++) {
 		//the value is in the range [0,1], computed by block number / N
 		value = (float)i / (float)segments;
 		//compute the RGB values using the value of the current strip and the current colormap
@@ -310,9 +310,9 @@ void draw_colorbar() {
 		glColor3f(R, G, B);
 		//draw the strips with two vertices
 		glVertex2f(winWidth - colorbar_width, i*segment_height);
-		glVertex2f(winWidth, i*segment_height);
-		
+		glVertex2f(winWidth, i*segment_height);	
 	}
+
 	glEnd();
 	
 }
