@@ -214,12 +214,8 @@ void grayscale(float value, float* R, float* G, float* B)
 
 void heatmap(float value, float* R, float* G, float* B)
 {
-	const float dx = 0.3;
-	if (value<0) value = 0; if (value>1) value = 1;
-	value = (6 - 2 * dx)*value + dx;
-	*R = fmax(0.0, (4 - fabs(value - 2) - fabs(value - 4)) / 2);
-	*G = 0;
-	*B = 0;
+
+	
 }
 
 void blackwhite(float value, float* R, float* G, float* B)
@@ -295,8 +291,9 @@ void compute_RGB(float value, float* R, float* G, float* B) {
 }
 //draw a colorbar with the currently selected colormap
 void draw_colorbar() {
+	
 	//the amount of 'strips'
-	int segments = 50;
+	int segments = 100;
 	float R, G, B, value;
 	//each 'strip' has the same height and width
 	float segment_height = winHeight / segments;
@@ -425,7 +422,7 @@ void keyboard(unsigned char key, int x, int y)
 		    if (draw_smoke==0) draw_vecs = 1; break;
 	  case 'y': draw_vecs = 1 - draw_vecs; 
 		    if (draw_vecs==0) draw_smoke = 1; break;
-	  case 'm': scalar_col++; if (scalar_col>COLOR_BANDS) scalar_col= COLOR_BLACKWHITE; break;
+	  case 'm': scalar_col++; if (scalar_col>COLOR_HEATMAP) scalar_col= COLOR_BLACKWHITE; break;
 	  case 'a': frozen = 1-frozen; break;
 	  case 'q': exit(0);
 	}
