@@ -200,9 +200,9 @@ void rainbow(float value,float* R,float* G,float* B)
    const float dx=0.8; 
    if (value<0) value=0; if (value>1) value=1;
    value = (6-2*dx)*value+dx;
-   *R = fmax(0.0,(3-fabs(value-4)-fabs(value-5))/2);
-   *G = fmax(0.0,(4-fabs(value-2)-fabs(value-4))/2);
-   *B = fmax(0.0,(3-fabs(value-1)-fabs(value-2))/2);
+   *R = fmax(0.0,(3-fabs(value-4)-fabs(value-5)));
+   *G = fmax(0.0,(4-fabs(value-2)-fabs(value-4)));
+   *B = fmax(0.0,(3-fabs(value-1)-fabs(value-2)));
 }
 void grayscale(float value, float* R, float* G, float* B)
 {
@@ -214,8 +214,9 @@ void grayscale(float value, float* R, float* G, float* B)
 
 void heatmap(float value, float* R, float* G, float* B)
 {
-
-	
+	*R = value;
+	*G = value * value/3;
+	*B = 0;
 }
 
 void blackwhite(float value, float* R, float* G, float* B)
