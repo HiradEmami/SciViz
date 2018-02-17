@@ -1,0 +1,5 @@
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(373,5): warning MSB8004: Output Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Output Directory.
+  fluids.cpp
+C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(1198,5): warning MSB8012: TargetPath(C:\Users\Hirad Gorgoroth\Documents\GitHub\SciViz\Smoke\Smoke\..\Release\Smoke.exe) does not match the Linker's OutputFile property value (C:\Users\Hirad Gorgoroth\Documents\GitHub\SciViz\Smoke\Smoke.exe). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Link.OutputFile).
+Color.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/SAFESEH' specification
+  Smoke.vcxproj -> C:\Users\Hirad Gorgoroth\Documents\GitHub\SciViz\Smoke\Smoke\..\Release\Smoke.exe
