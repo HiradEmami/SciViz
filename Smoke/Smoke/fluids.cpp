@@ -194,6 +194,12 @@ void do_one_simulation_step(void)
 
 //------ VISUALIZATION CODE STARTS HERE -----------------------------------------------------------------
 
+void interpolate(float value, float* R, float* G, float* B, float r1, float g1, float b1, float r2, float g2, float b2)
+{
+	*R = r1 * (1.0 - value) + value * r2;
+	*G = g1 * (1.0 - value) + value * g2;
+	*B = b1 * (1.0 - value) + value * b2;
+}
 
 //rainbow: Implements a color palette, mapping the scalar 'value' to a rainbow color RGB
 void rainbow(float value,float* R,float* G,float* B)
@@ -214,10 +220,32 @@ void grayscale(float value, float* R, float* G, float* B)
 
 void heatmap(float value, float* R, float* G, float* B)
 {
+	float r1, g1, b1, r2, g2, b2;
 	if (value<0) value = 0; if (value>1) value = 1;
-	*R = value + 0.2;
+	//orange 
+	r2 = 0.9*value;
+	g2 = 0;
+	b2 = 0;
+
+	if (value <= 0.5) {
+		//black
+		r1 = g1 = b1 = 0;
+		
+		//interpolate between black and orange
+		interpolate(value * 2, R, G, B, r1, g1, b1, r2, g2, b2);
+	}
+	else {
+		//white
+		r1 = g1 = 1;
+		b1 = 0.1*value;
+		//interpolate between orange and white
+		interpolate((value - 0.5) * 2, R, G, B, r2, g2, b2, r1, g1, b1);
+	}
+
+	
+	/**R = value + 0.2;
 	*G = value * (value/1.2);
-	*B = 0;
+	*B = 0;*/
 }
 
 void blackwhite(float value, float* R, float* G, float* B)
@@ -226,12 +254,6 @@ void blackwhite(float value, float* R, float* G, float* B)
 }
 
 
-void interpolate(float value, float* R, float* G, float* B, float r1, float g1, float b1, float r2, float g2, float b2)
-{
-	*R = r1 * (1.0 - value) + value * r2;
-	*G = g1 * (1.0 - value) + value * g2;
-	*B = b1 * (1.0 - value) + value * b2;
-}
 
 
 void diverging(float value, float* R, float* G, float* B)
@@ -243,16 +265,16 @@ void diverging(float value, float* R, float* G, float* B)
 	if (value <= 0.5) {
 		//blue
 		r1 = g1 = 0;
-		b1 = 1;
+		b1 = 0.9;
 		//interpolate between green and white
-		interpolate(value, R, G, B, r1, g1, b1, r2, g2, b2);
+		interpolate(value * 2, R, G, B, r1, g1, b1, r2, g2, b2);
 	}
 	else {
 		//red
 		g1 = b1 = 0;
 		r1 = 1;
 		//interpolate between white and red
-		interpolate(value, R, G, B, r2, g2, b2, r1, g1, b1);
+		interpolate((value - 0.5) * 2, R, G, B, r2, g2, b2, r1, g1, b1);
 	}
 	
 }
