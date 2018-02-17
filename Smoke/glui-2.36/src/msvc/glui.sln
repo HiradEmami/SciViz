@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2027
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GLUI", "glui.vcxproj", "{0CC98B8A-DD42-4388-A561-5E1D90EE956A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ppm2array", "ppm2array.vcxproj", "{E41EDE02-ACEF-4173-8039-7AB1C2277588}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+		Template|x86 = Template|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0CC98B8A-DD42-4388-A561-5E1D90EE956A}.Debug|x86.ActiveCfg = Debug|Win32
+		{0CC98B8A-DD42-4388-A561-5E1D90EE956A}.Debug|x86.Build.0 = Debug|Win32
+		{0CC98B8A-DD42-4388-A561-5E1D90EE956A}.Release|x86.ActiveCfg = Release|Win32
+		{0CC98B8A-DD42-4388-A561-5E1D90EE956A}.Release|x86.Build.0 = Release|Win32
+		{0CC98B8A-DD42-4388-A561-5E1D90EE956A}.Template|x86.ActiveCfg = Release|Win32
+		{0CC98B8A-DD42-4388-A561-5E1D90EE956A}.Template|x86.Build.0 = Release|Win32
+		{E41EDE02-ACEF-4173-8039-7AB1C2277588}.Debug|x86.ActiveCfg = Debug|Win32
+		{E41EDE02-ACEF-4173-8039-7AB1C2277588}.Debug|x86.Build.0 = Debug|Win32
+		{E41EDE02-ACEF-4173-8039-7AB1C2277588}.Release|x86.ActiveCfg = Release|Win32
+		{E41EDE02-ACEF-4173-8039-7AB1C2277588}.Release|x86.Build.0 = Release|Win32
+		{E41EDE02-ACEF-4173-8039-7AB1C2277588}.Template|x86.ActiveCfg = Template|Win32
+		{E41EDE02-ACEF-4173-8039-7AB1C2277588}.Template|x86.Build.0 = Template|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D278ADFD-FF59-499D-ADD3-AE413CEF8792}
+	EndGlobalSection
+EndGlobal
