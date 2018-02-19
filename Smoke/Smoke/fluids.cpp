@@ -21,8 +21,8 @@ rfftwnd_plan plan_rc, plan_cr;  //simulation domain discretization
 int   winWidth, winHeight;      //size of the graphics window, in pixels
 int   color_dir = 0;            //use direction color-coding or not
 float vec_scale = 1000;			//scaling of hedgehogs
-int   draw_smoke = 0;           //draw the smoke or not
-int   draw_vecs = 1;            //draw the vector field or not
+int   draw_smoke = 1;           //draw the smoke or not
+int   draw_vecs = 0;            //draw the vector field or not
 const int COLOR_BLACKWHITE = 0;   //different types of color mapping: black-and-white, grayscale, rainbow, banded
 const int COLOR_GRAYSCALE = 1;
 const int COLOR_RAINBOW = 2;
@@ -30,11 +30,17 @@ const int COLOR_HEATMAP = 3;
 const int COLOR_DIVERGING = 4;
 const int COLOR_BANDS = 5;
 
-int scalar_col = COLOR_BLACKWHITE;   //set initial colormap to black and white
+int scalar_col = COLOR_HEATMAP;   //set initial colormap to black and white
 									 //method for scalar coloring
 int frozen = 0;					   //toggles on/off the animation
 float colorbar_width = 50;
 int colorbar_height;
+
+// parameters for scaling and clamping
+float min = 0;
+float max = 1;
+float scale_step = 0.01;
+int NCOLORS = 255;
 
 
 //------ SIMULATION CODE STARTS HERE -----------------------------------------------------------------
@@ -231,13 +237,15 @@ void grayscale(float value, float* R, float* G, float* B)
 void heatmap(float value, float* R, float* G, float* B)
 {
 	float r1, g1, b1, r2, g2, b2;
-	if (value<0) value = 0; if (value>1) value = 1;
+	if (value<min) value = min; if (value>max) value = max;
 	//orange 
 	r2 = 0.9*value;
 	g2 = 0;
 	b2 = 0;
 
-	if (value <= 0.5) {
+	float mid = (max + min) / 2;
+
+	if (value <= mid) {
 		//black
 		r1 = g1 = b1 = 0;
 
@@ -271,8 +279,10 @@ void diverging(float value, float* R, float* G, float* B)
 	float r1, g1, b1, r2, g2, b2;
 	//white 
 	r2 = g2 = b2 = 1;
+	if (value<min) value = min; if (value>max) value = max;
+	float mid = (max + min) / 2;
 
-	if (value <= 0.5) {
+	if (value <= mid) {
 		//blue
 		r1 = g1 = 0;
 		b1 = 0.9;
@@ -292,7 +302,8 @@ void diverging(float value, float* R, float* G, float* B)
 
 //set_colormap: Sets different types of colormaps
 void set_colormap(float vy)
-{
+{	
+	vy *= NCOLORS; vy = (int)vy; vy /= NCOLORS;
 	float R, G, B;
 	if (scalar_col == COLOR_BLACKWHITE)
 		blackwhite(vy, &R, &G, &B);
@@ -502,6 +513,13 @@ void keyboard(unsigned char key, int x, int y)
 	case 'm': scalar_col++; if (scalar_col>COLOR_DIVERGING) scalar_col = COLOR_BLACKWHITE; break;
 	case 'a': frozen = 1 - frozen; break;
 	case 'q': exit(0);
+	case '4': min = min - scale_step; break;
+	case '6': min = min + scale_step; break;
+	case '2': max = max - scale_step; break;
+	case '8': max = max + scale_step; break;
+	case '9': min = 0; max = 1; break;
+	case 'n': NCOLORS -= 1; if (NCOLORS < 2) NCOLORS = 2;  break;
+	case 'N': NCOLORS += 1;  if (NCOLORS > 256) NCOLORS = 256; break;
 	}
 }
 
@@ -548,6 +566,13 @@ int main(int argc, char **argv)
 	cout << "y:     toggle drawing hedgehogs on/off\n";
 	cout << "m:     toggle thru scalar coloring\n";
 	cout << "a:     toggle the animation on/off\n";
+	cout << "4:		lower fmin\n";
+	cout << "6:		increase fmin\n";
+	cout << "2:		lower fmax\n";
+	cout << "8:		increase fmax\n";
+	cout << "9:		reset fmin and fmax\n";
+	cout << "n:		decrease number of colors used\n";
+	cout << "N:		increase number of colors used\n";
 	cout << "q:     quit\n\n";
 
 	glutInit(&argc, argv);

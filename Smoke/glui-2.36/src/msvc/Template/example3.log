@@ -1,3 +1,0 @@
-﻿D:\VisualStudio\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(387,5): warning MSB8028: The intermediate directory (Template\) contains files shared from another project (example1.vcxproj, example2.vcxproj, example4.vcxproj, example5.vcxproj, example6.vcxproj, ppm2array.vcxproj).  This can lead to incorrect clean and rebuild behavior.
-  example3.cpp
-..\example\example3.cpp(15): fatal error C1083: Cannot open include file: 'GL/glui.h': No such file or directory
