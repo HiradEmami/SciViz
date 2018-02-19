@@ -28,8 +28,7 @@ const int COLOR_GRAYSCALE = 1;
 const int COLOR_RAINBOW = 2;
 const int COLOR_HEATMAP = 3;
 const int COLOR_DIVERGING = 4;
-const int COLOR_BANDS = 5;
-const int COLOR_TWOCOLORS = 6;
+const int COLOR_TWOCOLORS = 5;
 
 int scalar_col = COLOR_HEATMAP;   //set initial colormap to black and white
 									 //method for scalar coloring
@@ -317,12 +316,6 @@ void set_colormap(float vy)
 	}
 	else if (scalar_col == COLOR_DIVERGING) {
 		diverging(vy, &R, &G, &B);
-	}
-	else if (scalar_col == COLOR_BANDS)
-	{
-		const int NLEVELS = 7;
-		vy *= NLEVELS; vy = (int)(vy); vy /= NLEVELS;
-		rainbow(vy, &R, &G, &B);
 	}
 	else if (scalar_col == COLOR_TWOCOLORS) {
 		interpolate(vy, &R, &G, &B,0,0,1,1,1,0);
