@@ -42,6 +42,10 @@ float max = 1;
 float scale_step = 0.01;
 int NCOLORS = 255;
 
+//HSV parameters
+float saturation = 0.0;
+float hue = 0.0;
+
 
 //------ SIMULATION CODE STARTS HERE -----------------------------------------------------------------
 
@@ -209,8 +213,9 @@ void do_one_simulation_step(void)
 
 
 //------ VISUALIZATION CODE STARTS HERE -----------------------------------------------------------------
-void rgb2hsv(float r, float g, float b, float &h, float &s, float &v)
+void rgb2hsv(float r, float g, float b, float* H, float* S, float* V)
 {
+	float h, s, v = 0.0;
 	float M = fmax(r, fmax(g, b));
 	float m = fmin(r, fmin(g, b));
 	float d = M - m;
@@ -225,9 +230,13 @@ void rgb2hsv(float r, float g, float b, float &h, float &s, float &v)
 	h /= 6;
 	if(h<0) h += 1;
 	}
+	*H = h;
+	*S = s;
+	*V = v;
 }
 
-void hsv2rgb(float h, float s, float v, float &r, float &g, float &b) {
+void hsv2rgb(float h, float s, float v, float* R, float* G, float* B) {
+	float r, g, b = 0.0;
 	int hueCase = (int)(h * 6);
 	float frac = 6 * h - hueCase;
 	float lx = v *(1 - s);
@@ -243,6 +252,10 @@ void hsv2rgb(float h, float s, float v, float &r, float &g, float &b) {
 		case 4: r = lz; g = lx; b = v; break; // 4/6<hue<5/6
 		case 5: r = v; g = lx; b = ly; break; // 5/6<hue<1
 	}
+
+	*R = r;
+	*G = g;
+	*B = b;
 }
 
 void interpolate(float value, float* R, float* G, float* B, float r1, float g1, float b1, float r2, float g2, float b2)
@@ -340,6 +353,7 @@ void set_colormap(float vy)
 {	
 	vy *= NCOLORS; vy = (int)vy; vy /= NCOLORS;
 	float R, G, B;
+	float H, S, V;
 	if (scalar_col == COLOR_BLACKWHITE)
 		blackwhite(vy, &R, &G, &B);
 	else if (scalar_col == COLOR_GRAYSCALE)
@@ -355,6 +369,13 @@ void set_colormap(float vy)
 	else if (scalar_col == COLOR_TWOCOLORS) {
 		interpolate(vy, &R, &G, &B,0,0,1,1,1,0);
 	}
+
+	//adjusting Hue and saturation given the input
+	
+	rgb2hsv( R,  G, B, &H,  &S, &V);
+	H += hue;
+	S += saturation;
+	hsv2rgb(H, S, V, &R, &G, &B);
 
 	glColor3f(R, G, B);
 }
@@ -555,6 +576,10 @@ void keyboard(unsigned char key, int x, int y)
 	case '9': min = 0; max = 1; break;
 	case 'n': NCOLORS -= 1; if (NCOLORS < 2) NCOLORS = 2;  break;
 	case 'N': NCOLORS += 1;  if (NCOLORS > 256) NCOLORS = 256; break;
+	case 'W': saturation += 0.1; break;
+	case 'w': saturation -= 0.1; break;
+	case 'U': hue += 0.1;break;
+	case 'u': hue -= 0.1; break;
 	}
 }
 
@@ -609,6 +634,8 @@ int main(int argc, char **argv)
 	cout << "n:		decrease number of colors used\n";
 	cout << "N:		increase number of colors used\n";
 	cout << "q:     quit\n\n";
+	cout << "W/w:   increase/decrease Saturation\n";
+	cout << "U/u:   increase/decrease Hue\n";
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
