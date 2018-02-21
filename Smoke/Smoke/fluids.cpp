@@ -5,6 +5,7 @@
 #include <rfftw.h>              //the numerical simulation Rlibrary
 #include <GL/glut.h>            //the GLUT graphics library       
 #include <iostream>				//for printing the help text
+#include "Color.h"
 
 //--- SIMULATION PARAMETERS ------------------------------------------------------------------------
 const int DIM = 50;				//size of simulation grid
@@ -30,6 +31,11 @@ const int COLOR_HEATMAP = 3;
 const int COLOR_DIVERGING = 4;
 const int COLOR_TWOCOLORS = 5;
 
+const int DENSITY = 0;
+const int VELOCITY = 1;
+int dataset = DENSITY;
+
+
 int scalar_col = COLOR_HEATMAP;   //set initial colormap to black and white
 									 //method for scalar coloring
 int frozen = 0;					   //toggles on/off the animation
@@ -41,10 +47,8 @@ float min = 0;
 float max = 1;
 float scale_step = 0.01;
 int NCOLORS = 255;
-
-//HSV parameters
-float saturation = 0.0;
-float hue = 0.0;
+float saturation_change = 1;
+float hue_change = 1;
 
 
 //------ SIMULATION CODE STARTS HERE -----------------------------------------------------------------
@@ -213,30 +217,29 @@ void do_one_simulation_step(void)
 
 
 //------ VISUALIZATION CODE STARTS HERE -----------------------------------------------------------------
-void rgb2hsv(float r, float g, float b, float* H, float* S, float* V)
+void rgb2hsv(float r, float g, float b, float *h, float *s, float *v)
 {
-	float h, s, v = 0.0;
 	float M = fmax(r, fmax(g, b));
 	float m = fmin(r, fmin(g, b));
 	float d = M - m;
-	v = M; //value = max( r ,g ,b)
-	s = (M>0.00001) ? d / M : 0; //saturation
+	*v = M; //value = max( r ,g ,b)
+	*s = (M>0.00001) ? d / M : 0; //saturation
 	if(s == 0) h = 0; //achromatic case , hue=0 by convention
 	else //chromatic case
 	{
-	if(r == M) h = (g-b) / d;
-	else if(g == M) h = 2 + (b-r) / d;
-	else h = 4 + (r-g) / d;
-	h /= 6;
+	if(r == M) *h = (g-b) / d;
+	else if(g == M) *h = 2 + (b-r) / d;
+	else *h = 4 + (r-g) / d;
+	*h /= 6;
 	if(h<0) h += 1;
 	}
-	*H = h;
-	*S = s;
-	*V = v;
+
+	// user controlled h and s
+	*s *= saturation_change;
+	*h *= hue_change;
 }
 
-void hsv2rgb(float h, float s, float v, float* R, float* G, float* B) {
-	float r, g, b = 0.0;
+void hsv2rgb(float h, float s, float v, float *r, float *g, float *b) {
 	int hueCase = (int)(h * 6);
 	float frac = 6 * h - hueCase;
 	float lx = v *(1 - s);
@@ -245,17 +248,13 @@ void hsv2rgb(float h, float s, float v, float* R, float* G, float* B) {
 	switch(hueCase)
 	{
 		case 0:
-		case 6: r = v; g = lz; b = lx; break; // 0<hue<1/6
-		case 1: r = ly; g = v; b = lx; break; // 1/6<hue<2/6
-		case 2: r = lx; g = v; b = lz; break; // 2/6<hue<3/6
-		case 3: r = lx; g = ly; b = v; break; // 3/6<hue/4/6
-		case 4: r = lz; g = lx; b = v; break; // 4/6<hue<5/6
-		case 5: r = v; g = lx; b = ly; break; // 5/6<hue<1
+		case 6: *r = v; *g = lz; *b = lx; break; // 0<hue<1/6
+		case 1: *r = ly; *g = v; *b = lx; break; // 1/6<hue<2/6
+		case 2: *r = lx; *g = v; *b = lz; break; // 2/6<hue<3/6
+		case 3: *r = lx; *g = ly; *b = v; break; // 3/6<hue/4/6
+		case 4: *r = lz; *g = lx; *b = v; break; // 4/6<hue<5/6
+		case 5: *r = v; *g = lx; *b = ly; break; // 5/6<hue<1
 	}
-
-	*R = r;
-	*G = g;
-	*B = b;
 }
 
 void interpolate(float value, float* R, float* G, float* B, float r1, float g1, float b1, float r2, float g2, float b2)
@@ -353,7 +352,6 @@ void set_colormap(float vy)
 {	
 	vy *= NCOLORS; vy = (int)vy; vy /= NCOLORS;
 	float R, G, B;
-	float H, S, V;
 	if (scalar_col == COLOR_BLACKWHITE)
 		blackwhite(vy, &R, &G, &B);
 	else if (scalar_col == COLOR_GRAYSCALE)
@@ -370,12 +368,9 @@ void set_colormap(float vy)
 		interpolate(vy, &R, &G, &B,0,0,1,1,1,0);
 	}
 
-	//adjusting Hue and saturation given the input
-	
-	rgb2hsv( R,  G, B, &H,  &S, &V);
-	H += hue;
-	S += saturation;
-	hsv2rgb(H, S, V, &R, &G, &B);
+	float h, s, v;
+	rgb2hsv(R, G, B, &h, &s, &v);
+	hsv2rgb(h, s, v, &R, &G, &B);
 
 	glColor3f(R, G, B);
 }
@@ -448,6 +443,9 @@ void draw_colorbar() {
 		value = (float)i / (float)segments;
 		//compute the RGB values using the value of the current strip and the current colormap
 		compute_RGB(value, &R, &G, &B);
+		float h, s, v;
+		rgb2hsv(R, G, B, &h, &s, &v);
+		hsv2rgb(h, s, v, &R, &G, &B);
 		glColor3f(R, G, B);
 		//draw the strips with two vertices
 		glVertex2f(winWidth - colorbar_width, i*segment_height);
@@ -458,12 +456,21 @@ void draw_colorbar() {
 
 }
 
+void draw_numbers() {
+	glColor3f(1, 1, 1);
+	glRasterPos2f(winWidth-20, winHeight-20);
+	
+	glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, (float)max);
+}
+
+
 //visualize: This is the main visualization function
 void visualize(void)
 {
 	int        i, j, idx;
 	fftw_real  wn = (fftw_real)winWidth / (fftw_real)(DIM + 1);   // Grid cell width
 	fftw_real  hn = (fftw_real)winHeight / (fftw_real)(DIM + 1);  // Grid cell height
+	float magnitude;
 
 	if (draw_smoke)
 	{
@@ -494,15 +501,23 @@ void visualize(void)
 				py3 = hn + (fftw_real)j * hn;
 				idx3 = (j * DIM) + (i + 1);
 
+				if (dataset == DENSITY) {
+					set_colormap(rho[idx0]);    glVertex2f(px0, py0);
+					set_colormap(rho[idx1]);    glVertex2f(px1, py1);
+					set_colormap(rho[idx2]);    glVertex2f(px2, py2);
 
-				set_colormap(rho[idx0]);    glVertex2f(px0, py0);
-				set_colormap(rho[idx1]);    glVertex2f(px1, py1);
-				set_colormap(rho[idx2]);    glVertex2f(px2, py2);
 
+					set_colormap(rho[idx0]);    glVertex2f(px0, py0);
+					set_colormap(rho[idx2]);    glVertex2f(px2, py2);
+					set_colormap(rho[idx3]);    glVertex2f(px3, py3);
+				}
+				else if (dataset == VELOCITY) {
+					magnitude = sqrt((vx[idx0] * vx[idx0]) + (vx[idx0] * vx[idx0]));
+					set_colormap(magnitude);
+					glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
+					glVertex2f((wn + (fftw_real)i * wn) + vec_scale * vx[idx0], (hn + (fftw_real)j * hn) + vec_scale * vy[idx0]);
+				}
 
-				set_colormap(rho[idx0]);    glVertex2f(px0, py0);
-				set_colormap(rho[idx2]);    glVertex2f(px2, py2);
-				set_colormap(rho[idx3]);    glVertex2f(px3, py3);
 			}
 		}
 		glEnd();
@@ -521,8 +536,25 @@ void visualize(void)
 			}
 		glEnd();
 	}
+	/*if (dataset == VELOCITY) {
+		float magnitude;
+		glBegin(GL_LINES);				//draw velocity magnitude
+		for (i = 0; i < DIM; i++)
+			for (j = 0; j < DIM; j++)
+			{
+				idx = (j * DIM) + i;
+				magnitude = sqrt((vx[idx] * vx[idx]) + (vx[idx] * vx[idx]));
+				set_colormap(magnitude);
+				glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
+				glVertex2f((wn + (fftw_real)i * wn) + vec_scale * vx[idx], (hn + (fftw_real)j * hn) + vec_scale * vy[idx]);
+			}
+		glEnd();
+	}*/
+	
 	//draw color bar
 	draw_colorbar();
+	draw_numbers();
+	
 
 }
 
@@ -576,10 +608,11 @@ void keyboard(unsigned char key, int x, int y)
 	case '9': min = 0; max = 1; break;
 	case 'n': NCOLORS -= 1; if (NCOLORS < 2) NCOLORS = 2;  break;
 	case 'N': NCOLORS += 1;  if (NCOLORS > 256) NCOLORS = 256; break;
-	case 'W': saturation += 0.1; break;
-	case 'w': saturation -= 0.1; break;
-	case 'U': hue += 0.1;break;
-	case 'u': hue -= 0.1; break;
+	case 'r': saturation_change -= 0.01; if (saturation_change < 0) saturation_change = 0;  break;
+	case 'R': saturation_change += 0.01; if (saturation_change > 1) saturation_change = 1;  break;
+	case 'h': hue_change -= 0.01; if (hue_change < 0) hue_change = 0;  break;
+	case 'H': hue_change += 0.01; if (hue_change > 1) hue_change = 1;  break;
+	case 'd': dataset += 1; if (dataset > VELOCITY) dataset = 0; break;
 	}
 }
 
@@ -634,8 +667,6 @@ int main(int argc, char **argv)
 	cout << "n:		decrease number of colors used\n";
 	cout << "N:		increase number of colors used\n";
 	cout << "q:     quit\n\n";
-	cout << "W/w:   increase/decrease Saturation\n";
-	cout << "U/u:   increase/decrease Hue\n";
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
