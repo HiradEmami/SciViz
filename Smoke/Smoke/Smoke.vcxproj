@@ -95,9 +95,11 @@
   <ItemGroup>
     <ClCompile Include="Color.cpp" />
     <ClCompile Include="fluids.cpp" />
+    <ClCompile Include="Model_fftw.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Color.h" />
+    <ClInclude Include="Model_fftw.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
