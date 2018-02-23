@@ -280,3 +280,4 @@ void View_visualization::visualize(Model_color* color, Model_fftw* model_fft, in
 
 }
 
+

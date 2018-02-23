@@ -51,7 +51,100 @@ void do_one_simulation_step(void)
 	}
 }
 
+void visualize(void)
+{
+	int        i, j, idx;
+	fftw_real  wn = (fftw_real)view.winWidth / (fftw_real)(DIM + 1);   // Grid cell width
+	fftw_real  hn = (fftw_real)view.winHeight / (fftw_real)(DIM + 1);  // Grid cell height
+	float magnitude;
 
+	if (view.draw_smoke)
+	{
+		int idx0, idx1, idx2, idx3;
+		double px0, py0, px1, py1, px2, py2, px3, py3;
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glBegin(GL_TRIANGLES);
+		for (j = 0; j < DIM - 1; j++)            //draw smoke
+		{
+			for (i = 0; i < DIM - 1; i++)
+			{
+				px0 = wn + (fftw_real)i * wn;
+				py0 = hn + (fftw_real)j * hn;
+				idx0 = (j * DIM) + i;
+
+
+				px1 = wn + (fftw_real)i * wn;
+				py1 = hn + (fftw_real)(j + 1) * hn;
+				idx1 = ((j + 1) * DIM) + i;
+
+
+				px2 = wn + (fftw_real)(i + 1) * wn;
+				py2 = hn + (fftw_real)(j + 1) * hn;
+				idx2 = ((j + 1) * DIM) + (i + 1);
+
+
+				px3 = wn + (fftw_real)(i + 1) * wn;
+				py3 = hn + (fftw_real)j * hn;
+				idx3 = (j * DIM) + (i + 1);
+
+				if (dataset == DENSITY) {
+					view.set_colormap(&color,model_fft.rho[idx0]);    glVertex2f(px0, py0);
+					view.set_colormap(&color, model_fft.rho[idx1]);    glVertex2f(px1, py1);
+					view.set_colormap(&color, model_fft.rho[idx2]);    glVertex2f(px2, py2);
+
+
+					view.set_colormap(&color, model_fft.rho[idx0]);    glVertex2f(px0, py0);
+					view.set_colormap(&color, model_fft.rho[idx2]);    glVertex2f(px2, py2);
+					view.set_colormap(&color, model_fft.rho[idx3]);    glVertex2f(px3, py3);
+				}
+				else if (dataset == VELOCITY) {
+					magnitude = sqrt((model_fft.vx[idx0] * model_fft.vx[idx0]) + (model_fft.vx[idx0] * model_fft.vx[idx0]));
+					view.set_colormap(&color,magnitude);
+					glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
+					glVertex2f((wn + (fftw_real)i * wn) + view.vec_scale * model_fft.vx[idx0], (hn + (fftw_real)j * hn) + view.vec_scale * model_fft.vy[idx0]);
+
+					view.set_colormap(&color, model_fft.rho[idx0]);    glVertex2f(px0, py0);
+					view.set_colormap(&color, model_fft.rho[idx1]);    glVertex2f(px1, py1);
+					view.set_colormap(&color, model_fft.rho[idx2]);    glVertex2f(px2, py2);
+
+
+					view.set_colormap(&color, model_fft.rho[idx0]);    glVertex2f(px0, py0);
+					view.set_colormap(&color, model_fft.rho[idx2]);    glVertex2f(px2, py2);
+					view.set_colormap(&color, model_fft.rho[idx3]);    glVertex2f(px3, py3);
+				}
+				else if (dataset == VELOCITY) {
+					magnitude = sqrt((model_fft.vx[idx0] * model_fft.vx[idx0]) + (model_fft.vx[idx0] * model_fft.vx[idx0]));
+					view.set_colormap(&color,magnitude);
+					glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
+					glVertex2f((wn + (fftw_real)i * wn) + view.vec_scale * model_fft.vx[idx0], (hn + (fftw_real)j * hn) + view.vec_scale * model_fft.vy[idx0]);
+				}
+
+			}
+		}
+		glEnd();
+	}
+
+	if (view.draw_vecs)
+	{
+		glBegin(GL_LINES);				//draw velocities
+		for (i = 0; i < DIM; i++)
+			for (j = 0; j < DIM; j++)
+			{
+				idx = (j * DIM) + i;
+				view.direction_to_color(model_fft.vx[idx], model_fft.vy[idx], view.color_dir);
+				glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
+				glVertex2f((wn + (fftw_real)i * wn) + view.vec_scale * model_fft.vx[idx], (hn + (fftw_real)j * hn) + view.vec_scale * model_fft.vy[idx]);
+			}
+		glEnd();
+	}
+
+
+	//draw color bar
+	view.draw_colorbar(&color);
+	view.draw_numbers(&color);
+
+
+}
 
 
 
@@ -60,11 +153,21 @@ void display()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	view.visualize(&color, &model_fft, &dataset, &VELOCITY, &DENSITY);
+	visualize();
 	glFlush();
 	glutSwapBuffers();
 }
 
+
+//reshape: Handle window resizing (reshaping) events
+void reshape(int w, int h)
+{
+	glViewport(0.0f, 0.0f, (GLfloat)w, (GLfloat)h);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluOrtho2D(0.0, (GLdouble)w, 0.0, (GLdouble)h);
+	view.winWidth = w; view.winHeight = h;
+}
 
 // drag: When the user drags with the mouse, add a force that corresponds to the direction of the mouse
 //       cursor movement. Also inject some new matter into the field at the mouse location.
@@ -97,12 +200,7 @@ void keyboardFunction(unsigned char key, int x, int y) {
 	keyboard.keyboard( &view.scalar_col,&view.draw_vecs, &view.draw_smoke, &view.vec_scale, &view.color_dir,key,&color,&model_fft,  &frozen,&dataset,&VELOCITY);
 	
 }
-void displayFunction() {
-	view.display(&color, &model_fft, &dataset, &VELOCITY,&DENSITY);
-}
-void reshapeFunction(int w, int h) {
-	view.reshape(w, h);
-}
+
 //main: The main program
 using namespace std;
 int main(int argc, char **argv)
@@ -113,13 +211,12 @@ int main(int argc, char **argv)
 	keyboard = Controller_keyboard();
 	
 
-	
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowSize(500, 500);
 	glutCreateWindow("Real-time smoke simulation and visualization");
 	glutDisplayFunc(display);
-	glutReshapeFunc(reshapeFunction);
+	glutReshapeFunc(reshape);
 	glutIdleFunc(do_one_simulation_step);
 	glutKeyboardFunc(keyboardFunction);
 	glutMotionFunc(drag);
