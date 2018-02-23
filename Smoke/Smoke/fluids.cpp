@@ -545,9 +545,7 @@ int main(int argc, char **argv)
 	glutIdleFunc(do_one_simulation_step);
 	glutKeyboardFunc(keyboard);
 	glutMotionFunc(drag);
-	
-	
-
+	GLUI *glut = GLUI_Master.create_glui("test");
 	model_fft.init_simulation(DIM);	//initialize the simulation data structures	
 	glutMainLoop();			//calls do_one_simulation_step, keyboard, display, drag, reshape
 	return 0;
