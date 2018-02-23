@@ -25,6 +25,8 @@ Model_color color;
 View_visualization view;
 Controller_keyboard keyboard;
 
+int main_window, control_panel;
+
 
 //do_one_simulation_step: Do one complete cycle of the simulation:
 //      - set_forces:       
@@ -35,6 +37,7 @@ void do_one_simulation_step(void)
 {
 	if (!frozen)
 	{
+		glutSetWindow(main_window);
 		model_fft.set_forces(DIM);
 		model_fft.solve(DIM);
 		model_fft.diffuse_matter(DIM);
@@ -47,7 +50,7 @@ void visualize(void)
 	int        i, j, idx;
 	fftw_real  wn = (fftw_real)view.winWidth / (fftw_real)(DIM + 1);   // Grid cell width
 	fftw_real  hn = (fftw_real)view.winHeight / (fftw_real)(DIM + 1);  // Grid cell height
-	float magnitude;
+	float magnitude0, magnitude1, magnitude2, magnitude3;;
 
 	if (view.draw_smoke)
 	{
@@ -88,26 +91,21 @@ void visualize(void)
 					view.set_colormap(&color, model_fft.rho[idx2]);    glVertex2f(px2, py2);
 					view.set_colormap(&color, model_fft.rho[idx3]);    glVertex2f(px3, py3);
 				}
+				
 				else if (dataset == VELOCITY) {
-					magnitude = sqrt((model_fft.vx[idx0] * model_fft.vx[idx0]) + (model_fft.vx[idx0] * model_fft.vx[idx0]));
-					view.set_colormap(&color,magnitude);
-					glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
-					glVertex2f((wn + (fftw_real)i * wn) + view.vec_scale * model_fft.vx[idx0], (hn + (fftw_real)j * hn) + view.vec_scale * model_fft.vy[idx0]);
-
-					view.set_colormap(&color, model_fft.rho[idx0]);    glVertex2f(px0, py0);
-					view.set_colormap(&color, model_fft.rho[idx1]);    glVertex2f(px1, py1);
-					view.set_colormap(&color, model_fft.rho[idx2]);    glVertex2f(px2, py2);
+					magnitude0 = sqrt((model_fft.vx[idx0] * model_fft.vx[idx0]) + (model_fft.vx[idx0] * model_fft.vx[idx0]));
+					magnitude1 = sqrt((model_fft.vx[idx1] * model_fft.vx[idx1]) + (model_fft.vx[idx1] * model_fft.vx[idx1]));
+					magnitude2 = sqrt((model_fft.vx[idx2] * model_fft.vx[idx2]) + (model_fft.vx[idx2] * model_fft.vx[idx2]));
+					magnitude3 = sqrt((model_fft.vx[idx3] * model_fft.vx[idx3]) + (model_fft.vx[idx3] * model_fft.vx[idx3]));
 
 
-					view.set_colormap(&color, model_fft.rho[idx0]);    glVertex2f(px0, py0);
-					view.set_colormap(&color, model_fft.rho[idx2]);    glVertex2f(px2, py2);
-					view.set_colormap(&color, model_fft.rho[idx3]);    glVertex2f(px3, py3);
-				}
-				else if (dataset == VELOCITY) {
-					magnitude = sqrt((model_fft.vx[idx0] * model_fft.vx[idx0]) + (model_fft.vx[idx0] * model_fft.vx[idx0]));
-					view.set_colormap(&color,magnitude);
-					glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
-					glVertex2f((wn + (fftw_real)i * wn) + view.vec_scale * model_fft.vx[idx0], (hn + (fftw_real)j * hn) + view.vec_scale * model_fft.vy[idx0]);
+					view.set_colormap(&color, magnitude0);    glVertex2f(px0, py0);
+					view.set_colormap(&color, magnitude1);    glVertex2f(px1, py1);
+					view.set_colormap(&color, magnitude2);    glVertex2f(px2, py2);
+
+					view.set_colormap(&color, magnitude0);    glVertex2f(px0, py0);
+					view.set_colormap(&color, magnitude2);    glVertex2f(px2, py2);
+					view.set_colormap(&color, magnitude3);    glVertex2f(px3, py3);
 				}
 
 			}
@@ -185,9 +183,11 @@ void drag(int mx, int my)
 }
 
 void keyboardFunction(unsigned char key, int x, int y) {
-	keyboard.keyboard(&view.scalar_col,&view.draw_vecs, &view.draw_smoke, &view.vec_scale, &view.color_dir,key,&color,&model_fft,  &frozen,&dataset,&VELOCITY);
+	keyboard.keyboard(&view.scalar_col, &view.draw_vecs, &view.draw_smoke, &view.vec_scale, &view.color_dir,key,&color,&model_fft,  &frozen,&dataset,&VELOCITY);
 	
 }
+
+
 
 int main(int argc, char **argv)
 {
@@ -198,13 +198,18 @@ int main(int argc, char **argv)
 	
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-	glutInitWindowSize(500, 500);
-	glutCreateWindow("Real-time smoke simulation and visualization");
+	glutInitWindowSize(700, 500);
+	// Main visualization window
+	main_window = glutCreateWindow("Real-time smoke simulation and visualization");
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);
 	glutIdleFunc(do_one_simulation_step);
 	glutKeyboardFunc(keyboardFunction);
 	glutMotionFunc(drag);
+
+	GLUI* control_panel = GLUI_Master.create_glui_subwindow(main_window);
+
+	control_panel->add_checkbox("Draw smoke", &view.draw_smoke);
 
 	model_fft.init_simulation(DIM);	//initialize the simulation data structures	
 	glutMainLoop();			//calls do_one_simulation_step, keyboard, display, drag, reshape

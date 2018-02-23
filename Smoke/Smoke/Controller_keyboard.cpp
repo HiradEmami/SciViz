@@ -46,10 +46,10 @@ void Controller_keyboard::keyboard(int *scalar_col,int *draw_vecs,int* draw_smok
 	case 'V': model_fft->visc *= 5; break;
 	case 'vy': model_fft->visc *= 0.2; break;
 	case 'x': *draw_smoke = 1 - *draw_smoke;
-		if (*draw_smoke == 0) *draw_vecs = 1; break;
+		/*if (*draw_smoke == 0) *draw_vecs = 1;*/ break;
 	case 'y': *draw_vecs = 1 - *draw_vecs;
 		if (*draw_vecs == 0) *draw_smoke = 1; break;
-	case 'm': *scalar_col++; if (*scalar_col>5) *scalar_col = 0; break;
+	case 'm': *scalar_col += 1; if (*scalar_col>5) *scalar_col = 0; break;
 	case 'a': *frozen = 1 - *frozen; break;
 	case 'q': exit(0);
 	case '4': color->scale_min -= color->scale_step; break;

@@ -23,7 +23,7 @@ View_visualization::View_visualization()
 	 COLOR_HEATMAP = 3;
 	 COLOR_DIVERGING = 4;
 	 COLOR_TWOCOLORS = 5;
-	 scalar_col = 5;
+	 scalar_col = 3;
 
 }
 
