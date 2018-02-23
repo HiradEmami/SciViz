@@ -11,9 +11,7 @@ class View_visualization
 {
 public:
 	View_visualization();
-	void reshape(int w, int h);
-	void display(Model_color* color, Model_fftw* model_fft, int* argdataset, int* argvolacity, int* argDensity);
-	void visualize(Model_color* color, Model_fftw* model_fft, int* argdataset, int* argvolacity, int* argDensity);
+
 	void draw_numbers(Model_color* color);
 	void draw_colorbar(Model_color* color);
 	void compute_RGB(Model_color* color,float value, float* R, float* G, float* B);

@@ -14,25 +14,16 @@
 
 const int DIM = 50;				//size of simulation grid
 
-
 int DENSITY = 0;
 int VELOCITY = 1;
 int dataset = DENSITY;
 
-
-
 int frozen = 0;					   //toggles on/off the animation
-
-
-
 
 Model_fftw model_fft;
 Model_color color;
 View_visualization view;
 Controller_keyboard keyboard;
-
-
-
 
 
 //do_one_simulation_step: Do one complete cycle of the simulation:
@@ -146,8 +137,6 @@ void visualize(void)
 
 }
 
-
-
 void display()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -157,7 +146,6 @@ void display()
 	glFlush();
 	glutSwapBuffers();
 }
-
 
 //reshape: Handle window resizing (reshaping) events
 void reshape(int w, int h)
@@ -197,12 +185,10 @@ void drag(int mx, int my)
 }
 
 void keyboardFunction(unsigned char key, int x, int y) {
-	keyboard.keyboard( &view.scalar_col,&view.draw_vecs, &view.draw_smoke, &view.vec_scale, &view.color_dir,key,&color,&model_fft,  &frozen,&dataset,&VELOCITY);
+	keyboard.keyboard(&view.scalar_col,&view.draw_vecs, &view.draw_smoke, &view.vec_scale, &view.color_dir,key,&color,&model_fft,  &frozen,&dataset,&VELOCITY);
 	
 }
 
-//main: The main program
-using namespace std;
 int main(int argc, char **argv)
 {
 	model_fft = Model_fftw();
@@ -210,7 +196,6 @@ int main(int argc, char **argv)
 	view = View_visualization();
 	keyboard = Controller_keyboard();
 	
-
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowSize(500, 500);
@@ -220,8 +205,6 @@ int main(int argc, char **argv)
 	glutIdleFunc(do_one_simulation_step);
 	glutKeyboardFunc(keyboardFunction);
 	glutMotionFunc(drag);
-	
-	
 
 	model_fft.init_simulation(DIM);	//initialize the simulation data structures	
 	glutMainLoop();			//calls do_one_simulation_step, keyboard, display, drag, reshape
