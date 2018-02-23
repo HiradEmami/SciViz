@@ -18,18 +18,30 @@
     <ClCompile Include="fluids.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Color.cpp">
+    <ClCompile Include="Model_fftw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Model_fftw.cpp">
+    <ClCompile Include="Model_color.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Controller_keyboard.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="View_visualization.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Color.h">
+    <ClInclude Include="Model_fftw.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Model_fftw.h">
+    <ClInclude Include="Model_color.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller_keyboard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="View_visualization.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

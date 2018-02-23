@@ -93,13 +93,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Color.cpp" />
+    <ClCompile Include="Controller_keyboard.cpp" />
+    <ClCompile Include="Model_color.cpp" />
     <ClCompile Include="fluids.cpp" />
     <ClCompile Include="Model_fftw.cpp" />
+    <ClCompile Include="View_visualization.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Color.h" />
+    <ClInclude Include="Controller_keyboard.h" />
+    <ClInclude Include="Model_color.h" />
     <ClInclude Include="Model_fftw.h" />
+    <ClInclude Include="View_visualization.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
