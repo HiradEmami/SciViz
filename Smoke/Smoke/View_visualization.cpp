@@ -23,7 +23,7 @@ View_visualization::View_visualization()
 	 COLOR_HEATMAP = 3;
 	 COLOR_DIVERGING = 4;
 	 COLOR_TWOCOLORS = 5;
-	 scalar_col = 3;
+	 scalar_col = 0;
 
 }
 
@@ -114,7 +114,7 @@ void View_visualization::compute_RGB(Model_color* color,float value, float* R, f
 void View_visualization::draw_colorbar(Model_color* color) {
 
 	//the amount of 'strips'
-	int segments = 50;
+	int segments = 10;
 	float R, G, B, value;
 	//each 'strip' has the same height and width
 	float segment_height = winHeight / segments;
@@ -130,8 +130,8 @@ void View_visualization::draw_colorbar(Model_color* color) {
 		color->hsv2rgb(h, s, v, &R, &G, &B);
 		glColor3f(R, G, B);
 		//draw the strips with two vertices
-		glVertex2f(winWidth - colorbar_width, i*segment_height);
-		glVertex2f(winWidth, i*segment_height);
+		glVertex2f(colorbar_width, i*segment_height);
+		glVertex2f(0, i*segment_height); 
 	}
 
 	glEnd();

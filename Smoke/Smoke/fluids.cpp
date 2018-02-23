@@ -25,7 +25,7 @@ Model_color color;
 View_visualization view;
 Controller_keyboard keyboard;
 
-int main_window, control_panel;
+int main_window, control_window;
 
 
 //do_one_simulation_step: Do one complete cycle of the simulation:
@@ -191,15 +191,11 @@ void keyboardFunction(unsigned char key, int x, int y) {
 
 int main(int argc, char **argv)
 {
-	model_fft = Model_fftw();
-	color = Model_color();
-	view = View_visualization();
-	keyboard = Controller_keyboard();
-	
+	// Initialize the main visualization window
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-	glutInitWindowSize(700, 500);
-	// Main visualization window
+	glutInitWindowSize(800, 600);
+
 	main_window = glutCreateWindow("Real-time smoke simulation and visualization");
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);
@@ -207,11 +203,34 @@ int main(int argc, char **argv)
 	glutKeyboardFunc(keyboardFunction);
 	glutMotionFunc(drag);
 
-	GLUI* control_panel = GLUI_Master.create_glui_subwindow(main_window);
+	// Initialize models, view and controller
+	model_fft = Model_fftw();
+	color = Model_color();
+	view = View_visualization();
+	keyboard = Controller_keyboard();
+	
+	// define the control window and all of its functions
+	GLUI* control_window = GLUI_Master.create_glui_subwindow(main_window, GLUI_SUBWINDOW_RIGHT);
+	GLUI_Panel* color_panel = control_window->add_panel("Color settings");
+	GLUI_Listbox* listbox = control_window->add_listbox_to_panel(color_panel, "Colormap", &view.scalar_col);
+	listbox->add_item(0, "Black white");
+	listbox->add_item(1, "Grayscale");
+	listbox->add_item(2, "Rainbow");
+	listbox->add_item(3, "Heatmap");
+	listbox->add_item(4, "Diverging");
+	listbox->add_item(5, "Two colors");
 
-	control_panel->add_checkbox("Draw smoke", &view.draw_smoke);
+	/*GLUI_Panel* range_panel = control_window->add_panel("Range settings");
+	control_window->add_edittext_to_panel(range_panel, "Fmin", GLUI_EDITTEXT_TEXT, &color.scale_min);
+	control_window->add_edittext_to_panel(range_panel, "Fmax", GLUI_EDITTEXT_TEXT, &color.scale_max);
 
+	GLUI_EditText* N_colors_field = control_window->add_edittext_to_panel(range_panel, "N colors", GLUI_EDITTEXT_TEXT, &color.NCOLORS);
+	N_colors_field->set_int_limits(2,255, GLUI_LIMIT_CLAMP);*/
+
+
+	
 	model_fft.init_simulation(DIM);	//initialize the simulation data structures	
 	glutMainLoop();			//calls do_one_simulation_step, keyboard, display, drag, reshape
 	return 0;
 }
+
