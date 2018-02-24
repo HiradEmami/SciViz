@@ -31,8 +31,19 @@ View_visualization::View_visualization()
 
 //------ VISUALIZATION CODE STARTS HERE -----------------------------------------------------------------
 
-void View_visualization::set_colormap(Model_color* color,float vy)
+void View_visualization::set_colormap(Model_color* color,float vy, int dataset)
 {
+	// change scale parameters depending on dataset
+	if (dataset == 0 ) {
+		color->max = color->density_max;
+		color->min = color->density_min;
+	}
+	else if (dataset == 1) {
+		color->max = color->vel_max;
+		color->min = color->vel_min;
+	}
+
+	vy = color->clamp(vy);
 	vy *= color->NCOLORS; vy = (int)vy; vy /= color->NCOLORS;
 	float R, G, B;
 	if (scalar_col == COLOR_BLACKWHITE)
@@ -85,6 +96,7 @@ void View_visualization::direction_to_color(float x, float y, int method)
 
 //compute the rgb values given the current segment and the current colormap
 void View_visualization::compute_RGB(Model_color* color,float value, float* R, float* G, float* B) {
+	value = color->clamp(value);
 	switch (scalar_col) {
 	case 0:
 		color->blackwhite(value, R, G, B);
@@ -142,7 +154,7 @@ void View_visualization::draw_numbers(Model_color* color) {
 	glColor3f(1, 1, 1);
 	glRasterPos2f(winWidth - 20, winHeight - 20);
 
-	glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, (float)color->scale_max);
+	glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, (float)color->max);
 }
 
 

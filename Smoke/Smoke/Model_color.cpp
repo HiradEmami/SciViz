@@ -1,6 +1,9 @@
+#include <iostream>	
 #include "Model_color.h"
 #include <GL/glut.h> 
 #include <math.h>
+
+
 
 Model_color::Model_color()
 {
@@ -8,10 +11,16 @@ Model_color::Model_color()
 	saturation_change = 1;
 	NCOLORS = 255;
 	scale_step = 0.01;
-	scale_max = 1.0;
-	scale_min = 0.0;
-	test = 0;
 
+	density_max = 1.0;
+	density_min = 0.0;
+	vel_max = 0.1;
+	vel_min = 0.0;
+
+	max = density_max;
+	min = density_min;
+	
+	std::cout << max << std::endl;
 }
 void Model_color::rgb2hsv(float r, float g, float b, float *h, float *s, float *v)
 {
@@ -53,6 +62,12 @@ void Model_color::hsv2rgb(float h, float s, float v, float *r, float *g, float *
 	}
 }
 
+// clamp value between current min and max
+float Model_color::clamp(float value) {
+	if (value<min) value = min; if (value>max) value = max;
+	return value;
+}
+
 void Model_color::interpolate(float value, float* R, float* G, float* B, float r1, float g1, float b1, float r2, float g2, float b2)
 {
 	*R = r1 * (1.0 - value) + value * r2;
@@ -64,7 +79,6 @@ void Model_color::interpolate(float value, float* R, float* G, float* B, float r
 void Model_color::rainbow(float value, float* R, float* G, float* B)
 {
 	const float dx = 0.8;
-	if (value<0) value = 0; if (value>1) value = 1;
 	value = (6 - 2 * dx)*value + dx;
 	*R = fmax(0.0, (3 - fabs(value - 4) - fabs(value - 5)));
 	*G = fmax(0.0, (4 - fabs(value - 2) - fabs(value - 4)));
@@ -72,7 +86,6 @@ void Model_color::rainbow(float value, float* R, float* G, float* B)
 }
 void Model_color::grayscale(float value, float* R, float* G, float* B)
 {
-	if (value<0) value = 0; if (value>1) value = 1;
 	value = value / 3;
 	*R = *G = *B = value;
 }
@@ -81,13 +94,12 @@ void Model_color::heatmap(float value, float* R, float* G, float* B)
 {
 
 	float r1, g1, b1, r2, g2, b2;
-	if (value<scale_min) value = scale_min; if (value>scale_max) value = scale_max;
 	//orange 
 	r2 = 0.9*value;
 	g2 = 0;
 	b2 = 0;
 
-	float mid = (scale_max + scale_min) / 2;
+	float mid = (max + min) / 2;
 
 	if (value <= mid) {
 		//black
@@ -123,8 +135,7 @@ void Model_color::diverging(float value, float* R, float* G, float* B)
 	float r1, g1, b1, r2, g2, b2;
 	//white 
 	r2 = g2 = b2 = 1;
-	if (value<scale_min) value = scale_min; if (value>scale_max) value = scale_max;
-	float mid = (scale_max + scale_min) / 2;
+	float mid = (max + min) / 2;
 
 	if (value <= mid) {
 		//blue

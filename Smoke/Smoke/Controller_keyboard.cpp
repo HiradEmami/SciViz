@@ -52,11 +52,11 @@ void Controller_keyboard::keyboard(int *scalar_col,int *draw_vecs,int* draw_smok
 	case 'm': *scalar_col += 1; if (*scalar_col>5) *scalar_col = 0; break;
 	case 'a': *frozen = 1 - *frozen; break;
 	case 'q': exit(0);
-	case '4': color->scale_min -= color->scale_step; break;
-	case '6': color->scale_min += color->scale_step; break;
-	case '2': color->scale_max -= color->scale_step; break;
-	case '8': color->scale_max += color->scale_step; break;
-	case '9': color->scale_min = 0; color->scale_max = 1; break;
+	case '4': color->min -= color->scale_step; break;
+	case '6': color->min += color->scale_step; break;
+	case '2': color->max -= color->scale_step; break;
+	case '8': color->max += color->scale_step; break;
+	case '9': color->min = 0; color->max = 1; break;
 	case 'n': color->NCOLORS -= 1; if (color->NCOLORS < 2) color->NCOLORS = 2;  break;
 	case 'N': color->NCOLORS += 1;  if (color->NCOLORS > 256)color->NCOLORS = 256; break;
 	case 'r': color->saturation_change -= 0.01; if (color->saturation_change < 0) color->saturation_change = 0;  break;

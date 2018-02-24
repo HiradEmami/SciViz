@@ -9,7 +9,7 @@
 #include "Model_fftw.h"
 #include "Controller_keyboard.h"
 #include "View_visualization.h"
-#include <GL/glui.h>
+//#include <GL/glui.h>
 
 
 const int DIM = 50;				//size of simulation grid
@@ -25,7 +25,7 @@ Model_color color;
 View_visualization view;
 Controller_keyboard keyboard;
 
-int main_window, control_window;
+int main_window = 1, control_window = 2;
 
 
 //do_one_simulation_step: Do one complete cycle of the simulation:
@@ -35,9 +35,9 @@ int main_window, control_window;
 //      - gluPostRedisplay: draw a new visualization frame
 void do_one_simulation_step(void)
 {
+	glutSetWindow(main_window);
 	if (!frozen)
 	{
-		glutSetWindow(main_window);
 		model_fft.set_forces(DIM);
 		model_fft.solve(DIM);
 		model_fft.diffuse_matter(DIM);
@@ -82,14 +82,14 @@ void visualize(void)
 				idx3 = (j * DIM) + (i + 1);
 
 				if (dataset == DENSITY) {
-					view.set_colormap(&color,model_fft.rho[idx0]);    glVertex2f(px0, py0);
-					view.set_colormap(&color, model_fft.rho[idx1]);    glVertex2f(px1, py1);
-					view.set_colormap(&color, model_fft.rho[idx2]);    glVertex2f(px2, py2);
+					view.set_colormap(&color,model_fft.rho[idx0], dataset);    glVertex2f(px0, py0);
+					view.set_colormap(&color, model_fft.rho[idx1], dataset);    glVertex2f(px1, py1);
+					view.set_colormap(&color, model_fft.rho[idx2], dataset);    glVertex2f(px2, py2);
 
 
-					view.set_colormap(&color, model_fft.rho[idx0]);    glVertex2f(px0, py0);
-					view.set_colormap(&color, model_fft.rho[idx2]);    glVertex2f(px2, py2);
-					view.set_colormap(&color, model_fft.rho[idx3]);    glVertex2f(px3, py3);
+					view.set_colormap(&color, model_fft.rho[idx0], dataset);    glVertex2f(px0, py0);
+					view.set_colormap(&color, model_fft.rho[idx2], dataset);    glVertex2f(px2, py2);
+					view.set_colormap(&color, model_fft.rho[idx3], dataset);    glVertex2f(px3, py3);
 				}
 				
 				else if (dataset == VELOCITY) {
@@ -99,13 +99,13 @@ void visualize(void)
 					magnitude3 = sqrt((model_fft.vx[idx3] * model_fft.vx[idx3]) + (model_fft.vx[idx3] * model_fft.vx[idx3]));
 
 
-					view.set_colormap(&color, magnitude0);    glVertex2f(px0, py0);
-					view.set_colormap(&color, magnitude1);    glVertex2f(px1, py1);
-					view.set_colormap(&color, magnitude2);    glVertex2f(px2, py2);
+					view.set_colormap(&color, magnitude0, dataset);    glVertex2f(px0, py0);
+					view.set_colormap(&color, magnitude1, dataset);    glVertex2f(px1, py1);
+					view.set_colormap(&color, magnitude2, dataset);    glVertex2f(px2, py2);
 
-					view.set_colormap(&color, magnitude0);    glVertex2f(px0, py0);
-					view.set_colormap(&color, magnitude2);    glVertex2f(px2, py2);
-					view.set_colormap(&color, magnitude3);    glVertex2f(px3, py3);
+					view.set_colormap(&color, magnitude0, dataset);    glVertex2f(px0, py0);
+					view.set_colormap(&color, magnitude2, dataset);    glVertex2f(px2, py2);
+					view.set_colormap(&color, magnitude3, dataset);    glVertex2f(px3, py3);
 				}
 
 			}
@@ -187,6 +187,9 @@ void keyboardFunction(unsigned char key, int x, int y) {
 	
 }
 
+
+
+
 int main(int argc, char **argv)
 {
 	// Initialize the main visualization window
@@ -206,14 +209,20 @@ int main(int argc, char **argv)
 	color = Model_color();
 	view = View_visualization();
 	keyboard = Controller_keyboard();
+
+	model_fft.init_simulation(DIM);	//initialize the simulation data structures	
+	
 	
 	// define the control window and all of its functions
-	GLUI* control_window = GLUI_Master.create_glui_subwindow(main_window, GLUI_SUBWINDOW_RIGHT);
+	/*GLUI* control_window = GLUI_Master.create_glui_subwindow(main_window, GLUI_SUBWINDOW_RIGHT);
 	// add a panel for changing the dataset being colored
 	GLUI_Panel* dataset_panel = control_window->add_panel("Dataset");
 	GLUI_RadioGroup* dataset_buttons = control_window->add_radiogroup_to_panel(dataset_panel, &dataset);
 	control_window->add_radiobutton_to_group(dataset_buttons, "Density");
 	control_window->add_radiobutton_to_group(dataset_buttons, "Velocity");
+	GLUI_RadioButton* rb = control_window->add_radiobutton_to_group(dataset_buttons, "Force Field");
+	rb->disable();
+
 	// add a panel for changing the colormap
 	GLUI_Panel* colormap_panel = control_window->add_panel("Colormap");
 	GLUI_RadioGroup* colormap_buttons = control_window->add_radiogroup_to_panel(colormap_panel, &view.scalar_col);	control_window->add_radiobutton_to_group(colormap_buttons, "Black-White");
@@ -222,14 +231,8 @@ int main(int argc, char **argv)
 	control_window->add_radiobutton_to_group(colormap_buttons, "Heatmap");
 	control_window->add_radiobutton_to_group(colormap_buttons, "Diverging");
 	control_window->add_radiobutton_to_group(colormap_buttons, "Blue-Yellow");
-	
-
-
-	
-
-
-	
-	model_fft.init_simulation(DIM);	//initialize the simulation data structures	
+	GLUI_Panel* color_panel = control_window->add_panel("Color options");
+	*/
 	glutMainLoop();			//calls do_one_simulation_step, keyboard, display, drag, reshape
 	return 0;
 }

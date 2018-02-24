@@ -16,7 +16,7 @@ public:
 	void draw_colorbar(Model_color* color);
 	void compute_RGB(Model_color* color,float value, float* R, float* G, float* B);
 	void direction_to_color(float x, float y, int method);
-	void set_colormap(Model_color* color,float vy);
+	void set_colormap(Model_color* color,float vy, int dataset);
 	//parameters
 	int DIM;				//size of simulation grid
 	int   winWidth, winHeight;  //size of the graphics window, in pixels

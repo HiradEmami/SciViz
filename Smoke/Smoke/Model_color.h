@@ -5,16 +5,23 @@ class Model_color
 public:
 	Model_color();
 	// parameters for scaling and clamping
-	float scale_min;
-	float scale_max;
+	//float scale_min;
+	//float scale_max;
 	float scale_step;
 	int NCOLORS;
 	float saturation_change;
 	float hue_change;
 
-	int test;
-	//functions
+	float max;
+	float min;
+	float density_max;
+	float density_min;
+	float vel_max;
+	float vel_min;
+	
 
+	//functions
+	float clamp(float value);
 	void diverging(float value, float* R, float* G, float* B);
 	void blackwhite(float value, float* R, float* G, float* B);
 	void heatmap(float value, float* R, float* G, float* B);
