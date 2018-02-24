@@ -187,8 +187,6 @@ void keyboardFunction(unsigned char key, int x, int y) {
 	
 }
 
-
-
 int main(int argc, char **argv)
 {
 	// Initialize the main visualization window
@@ -211,21 +209,23 @@ int main(int argc, char **argv)
 	
 	// define the control window and all of its functions
 	GLUI* control_window = GLUI_Master.create_glui_subwindow(main_window, GLUI_SUBWINDOW_RIGHT);
-	GLUI_Panel* color_panel = control_window->add_panel("Color settings");
-	GLUI_Listbox* listbox = control_window->add_listbox_to_panel(color_panel, "Colormap", &view.scalar_col);
-	listbox->add_item(0, "Black white");
-	listbox->add_item(1, "Grayscale");
-	listbox->add_item(2, "Rainbow");
-	listbox->add_item(3, "Heatmap");
-	listbox->add_item(4, "Diverging");
-	listbox->add_item(5, "Two colors");
+	// add a panel for changing the dataset being colored
+	GLUI_Panel* dataset_panel = control_window->add_panel("Dataset");
+	GLUI_RadioGroup* dataset_buttons = control_window->add_radiogroup_to_panel(dataset_panel, &dataset);
+	control_window->add_radiobutton_to_group(dataset_buttons, "Density");
+	control_window->add_radiobutton_to_group(dataset_buttons, "Velocity");
+	// add a panel for changing the colormap
+	GLUI_Panel* colormap_panel = control_window->add_panel("Colormap");
+	GLUI_RadioGroup* colormap_buttons = control_window->add_radiogroup_to_panel(colormap_panel, &view.scalar_col);	control_window->add_radiobutton_to_group(colormap_buttons, "Black-White");
+	control_window->add_radiobutton_to_group(colormap_buttons, "Grayscale");
+	control_window->add_radiobutton_to_group(colormap_buttons, "Rainbow");
+	control_window->add_radiobutton_to_group(colormap_buttons, "Heatmap");
+	control_window->add_radiobutton_to_group(colormap_buttons, "Diverging");
+	control_window->add_radiobutton_to_group(colormap_buttons, "Blue-Yellow");
+	
 
-	/*GLUI_Panel* range_panel = control_window->add_panel("Range settings");
-	control_window->add_edittext_to_panel(range_panel, "Fmin", GLUI_EDITTEXT_TEXT, &color.scale_min);
-	control_window->add_edittext_to_panel(range_panel, "Fmax", GLUI_EDITTEXT_TEXT, &color.scale_max);
 
-	GLUI_EditText* N_colors_field = control_window->add_edittext_to_panel(range_panel, "N colors", GLUI_EDITTEXT_TEXT, &color.NCOLORS);
-	N_colors_field->set_int_limits(2,255, GLUI_LIMIT_CLAMP);*/
+	
 
 
 	
