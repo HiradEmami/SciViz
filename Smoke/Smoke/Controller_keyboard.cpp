@@ -23,40 +23,38 @@ Controller_keyboard::Controller_keyboard()
 	std::cout << "y:     toggle drawing hedgehogs on/off\n";
 	std::cout << "m:     toggle thru scalar coloring\n";
 	std::cout << "a:     toggle the animation on/off\n";
-	std::cout << "4:		lower fmin\n";
-	std::cout << "6:		increase fmin\n";
-	std::cout << "2:		lower fmax\n";
-	std::cout << "8:		increase fmax\n";
-	std::cout << "9:		reset fmin and fmax\n";
-	std::cout << "n:		decrease number of colors used\n";
-	std::cout << "N:		increase number of colors used\n";
+	std::cout << "E/e:		increase/decreaselower fmin\n";
+	std::cout << "W/w:		increase/decreaselower fmax\n";
+	std::cout << "i:		reset fmin and fmax\n";
+	std::cout << "N/n:		increase/decrease number of colors used\n";
 	std::cout << "q:     quit\n\n";
+	std::cout << "=======================================\n";
 }
 
 //keyboard: Handle key presses
-void Controller_keyboard::keyboard(int *scalar_col,int *draw_vecs,int* draw_smoke,float* vec_scale,int* color_dir,unsigned char key, Model_color* color, Model_fftw* model_fft , int* frozen, int* data, int* velocity)
+void Controller_keyboard::keyboard(View_visualization* view,unsigned char key, Model_color* color, Model_fftw* model_fft , int* frozen, int* data, int* velocity)
 { 
 	switch (key)
 	{
 	case 't': model_fft->dt -= 0.001; break;
 	case 'T': model_fft->dt += 0.001; break;
-	case 'c': *color_dir = 1 - *color_dir; break;
-	case 'S': *vec_scale *= 1.2; break;
-	case 's': *vec_scale *= 0.8; break;
+	case 'c': view->color_dir = 1 - view->color_dir; break;
+	case 'S': view->vec_scale *= 1.2; break;
+	case 's': view->vec_scale *= 0.8; break;
 	case 'V': model_fft->visc *= 5; break;
 	case 'vy': model_fft->visc *= 0.2; break;
-	case 'x': *draw_smoke = 1 - *draw_smoke;
+	case 'x': view->draw_smoke = 1 - view->draw_smoke;
 		/*if (*draw_smoke == 0) *draw_vecs = 1;*/ break;
-	case 'y': *draw_vecs = 1 - *draw_vecs;
-		if (*draw_vecs == 0) *draw_smoke = 1; break;
-	case 'm': *scalar_col += 1; if (*scalar_col>5) *scalar_col = 0; break;
+	case 'y': view->draw_vecs = 1 - view->draw_vecs;
+		if (view->draw_vecs == 0) view->draw_smoke = 1; break;
+	case 'm': view->scalar_col += 1; if (view->scalar_col>5) view->scalar_col = 0; break;
 	case 'a': *frozen = 1 - *frozen; break;
 	case 'q': exit(0);
-	case '4': color->min -= color->scale_step; break;
-	case '6': color->min += color->scale_step; break;
-	case '2': color->max -= color->scale_step; break;
-	case '8': color->max += color->scale_step; break;
-	case '9': color->min = 0; color->max = 1; break;
+	case 'e': color->min -= color->scale_step; break;
+	case 'E': color->min += color->scale_step; break;
+	case 'w': color->max -= color->scale_step; break;
+	case 'W': color->max += color->scale_step; break;
+	case 'i': color->min = 0; color->max = 1; break;
 	case 'n': color->NCOLORS -= 1; if (color->NCOLORS < 2) color->NCOLORS = 2;  break;
 	case 'N': color->NCOLORS += 1;  if (color->NCOLORS > 256)color->NCOLORS = 256; break;
 	case 'r': color->saturation_change -= 0.01; if (color->saturation_change < 0) color->saturation_change = 0;  break;

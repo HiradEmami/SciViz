@@ -183,7 +183,7 @@ void drag(int mx, int my)
 }
 
 void keyboardFunction(unsigned char key, int x, int y) {
-	keyboard.keyboard(&view.scalar_col, &view.draw_vecs, &view.draw_smoke, &view.vec_scale, &view.color_dir,key,&color,&model_fft,  &frozen,&dataset,&VELOCITY);
+	keyboard.keyboard(&view,key,&color,&model_fft,  &frozen,&dataset,&VELOCITY);
 	
 }
 
