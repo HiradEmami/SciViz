@@ -32,6 +32,7 @@ View_visualization::View_visualization()
 
 void View_visualization::set_colormap(Model_color* color,float vy, int dataset)
 {
+
 	// change scale parameters depending on dataset
 	if (dataset == 0 ) {
 		color->max = color->density_max;
@@ -64,6 +65,7 @@ void View_visualization::set_colormap(Model_color* color,float vy, int dataset)
 	color->rgb2hsv(R, G, B, &h, &s, &v);
 	color->hsv2rgb(h, s, v, &R, &G, &B);
 
+
 	glColor3f(R, G, B);
 
 }
@@ -72,6 +74,7 @@ void View_visualization::set_colormap(Model_color* color,float vy, int dataset)
 //the selected scalar dataset and colormap                    
 void View_visualization::direction_to_color(float x, float y, float scalar, int colormap, Model_color color)
 {
+	scalar = color.clamp(scalar);
 	float r, g, b, f;
 	if (color_dir) {
 		if (colormap == COLOR_BLACKWHITE)
