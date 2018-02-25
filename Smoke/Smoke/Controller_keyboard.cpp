@@ -61,7 +61,7 @@ void Controller_keyboard::keyboard(View_visualization* view,unsigned char key, M
 	case 'R': color->saturation_change += 0.01; if (color->saturation_change > 1) color->saturation_change = 1;  break;
 	case 'h': color->hue_change -= 0.01; if (color->hue_change < 0) color->hue_change = 0;  break;
 	case 'H':color->hue_change += 0.01; if (color->hue_change > 1) color->hue_change = 1;  break;
-	case 'd': *data += 1; if (*data > *velocity) *data = 0; break;
+	case 'd': *data += 1; if (*data > 2) *data = 0; break;
 	}
 	
 }

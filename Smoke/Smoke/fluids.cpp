@@ -9,14 +9,26 @@
 #include "Model_fftw.h"
 #include "Controller_keyboard.h"
 #include "View_visualization.h"
-//#include <GL/glui.h>
+#include <GL/glui.h>
 
 
 const int DIM = 50;				//size of simulation grid
 
+// parameters for changing color dataset
 int DENSITY = 0;
 int VELOCITY = 1;
+int FORCE = 2;
 int dataset = DENSITY;
+
+// parameters for changing glyph dataset
+int SCALAR_DENSITY = 0;
+int SCALAR_VELOCITY = 1;
+int SCALAR_FORCE = 2;
+int dataset_scalar = SCALAR_DENSITY;
+
+int VECTOR_VELOCITY = 0;
+int VECTOR_FORCE = 1;
+int dataset_vector = VECTOR_VELOCITY;
 
 int frozen = 0;					   //toggles on/off the animation
 
@@ -25,8 +37,8 @@ Model_color color;
 View_visualization view;
 Controller_keyboard keyboard;
 
-int main_window = 1, control_window = 2;
-
+int main_window = 1;
+GLUI* control_window;
 
 //do_one_simulation_step: Do one complete cycle of the simulation:
 //      - set_forces:       
@@ -35,6 +47,8 @@ int main_window = 1, control_window = 2;
 //      - gluPostRedisplay: draw a new visualization frame
 void do_one_simulation_step(void)
 {
+	// sync control options
+	control_window->sync_live();
 	glutSetWindow(main_window);
 	if (!frozen)
 	{
@@ -50,7 +64,7 @@ void visualize(void)
 	int        i, j, idx;
 	fftw_real  wn = (fftw_real)view.winWidth / (fftw_real)(DIM + 1);   // Grid cell width
 	fftw_real  hn = (fftw_real)view.winHeight / (fftw_real)(DIM + 1);  // Grid cell height
-	float magnitude0, magnitude1, magnitude2, magnitude3;;
+	float value0, value1, value2, value3;
 
 	if (view.draw_smoke)
 	{
@@ -81,49 +95,98 @@ void visualize(void)
 				py3 = hn + (fftw_real)j * hn;
 				idx3 = (j * DIM) + (i + 1);
 
+				// draw smoke density
 				if (dataset == DENSITY) {
-					view.set_colormap(&color,model_fft.rho[idx0], dataset);    glVertex2f(px0, py0);
-					view.set_colormap(&color, model_fft.rho[idx1], dataset);    glVertex2f(px1, py1);
-					view.set_colormap(&color, model_fft.rho[idx2], dataset);    glVertex2f(px2, py2);
-
-
-					view.set_colormap(&color, model_fft.rho[idx0], dataset);    glVertex2f(px0, py0);
-					view.set_colormap(&color, model_fft.rho[idx2], dataset);    glVertex2f(px2, py2);
-					view.set_colormap(&color, model_fft.rho[idx3], dataset);    glVertex2f(px3, py3);
+					// scalar values are simply the rho/density values
+					value0 = model_fft.rho[idx0];
+					value1 = model_fft.rho[idx1];
+					value2 = model_fft.rho[idx2];
+					value3 = model_fft.rho[idx3];
+					
 				}
-				
+				// draw smoke velocity
 				else if (dataset == VELOCITY) {
-					magnitude0 = sqrt((model_fft.vx[idx0] * model_fft.vx[idx0]) + (model_fft.vx[idx0] * model_fft.vx[idx0]));
-					magnitude1 = sqrt((model_fft.vx[idx1] * model_fft.vx[idx1]) + (model_fft.vx[idx1] * model_fft.vx[idx1]));
-					magnitude2 = sqrt((model_fft.vx[idx2] * model_fft.vx[idx2]) + (model_fft.vx[idx2] * model_fft.vx[idx2]));
-					magnitude3 = sqrt((model_fft.vx[idx3] * model_fft.vx[idx3]) + (model_fft.vx[idx3] * model_fft.vx[idx3]));
+					// scalar values are the magnitudes of the vectors
+					value0 = sqrt((model_fft.vx[idx0] * model_fft.vx[idx0]) + (model_fft.vy[idx0] * model_fft.vy[idx0]));
+					value1 = sqrt((model_fft.vx[idx1] * model_fft.vx[idx1]) + (model_fft.vy[idx1] * model_fft.vy[idx1]));
+					value2 = sqrt((model_fft.vx[idx2] * model_fft.vx[idx2]) + (model_fft.vy[idx2] * model_fft.vy[idx2]));
+					value3 = sqrt((model_fft.vx[idx3] * model_fft.vx[idx3]) + (model_fft.vy[idx3] * model_fft.vy[idx3]));
 
-
-					view.set_colormap(&color, magnitude0, dataset);    glVertex2f(px0, py0);
-					view.set_colormap(&color, magnitude1, dataset);    glVertex2f(px1, py1);
-					view.set_colormap(&color, magnitude2, dataset);    glVertex2f(px2, py2);
-
-					view.set_colormap(&color, magnitude0, dataset);    glVertex2f(px0, py0);
-					view.set_colormap(&color, magnitude2, dataset);    glVertex2f(px2, py2);
-					view.set_colormap(&color, magnitude3, dataset);    glVertex2f(px3, py3);
+					// increase velocity scalar to make it more visible
+					value0 *= 20;
+					value1 *= 20;
+					value2 *= 20;
+					value3 *= 20;
+					
 				}
 
+				// draw smoke force field
+				else if (dataset == FORCE) {
+					value0 = sqrt((model_fft.fx[idx0] * model_fft.fx[idx0]) + (model_fft.fy[idx0] * model_fft.fy[idx0]));
+					value1 = sqrt((model_fft.fx[idx1] * model_fft.fx[idx1]) + (model_fft.fy[idx1] * model_fft.fy[idx1]));
+					value2 = sqrt((model_fft.fx[idx2] * model_fft.fx[idx2]) + (model_fft.fy[idx2] * model_fft.fy[idx2]));
+					value3 = sqrt((model_fft.fx[idx3] * model_fft.fx[idx3]) + (model_fft.fy[idx3] * model_fft.fy[idx3]));
+
+					// increase force scalar to make it more visible
+					value0 *= 20;
+					value1 *= 20;
+					value2 *= 20;
+					value3 *= 20;
+				
+
+				}
+
+				view.set_colormap(&color, value0, dataset);    glVertex2f(px0, py0);
+				view.set_colormap(&color, value1, dataset);    glVertex2f(px1, py1);
+				view.set_colormap(&color, value2, dataset);    glVertex2f(px2, py2);
+
+				view.set_colormap(&color, value0, dataset);    glVertex2f(px0, py0);
+				view.set_colormap(&color, value2, dataset);    glVertex2f(px2, py2);
+				view.set_colormap(&color, value3, dataset);    glVertex2f(px3, py3);
 			}
 		}
 		glEnd();
 	}
-
+	
+	//draw vector field by using glyphs
+	float x, y, scalar, magnitude;
 	if (view.draw_vecs)
 	{
-		glBegin(GL_LINES);				//draw velocities
+		glBegin(GL_LINES);				
 		for (i = 0; i < DIM; i++)
 			for (j = 0; j < DIM; j++)
 			{
 				idx = (j * DIM) + i;
-				view.direction_to_color(model_fft.vx[idx], model_fft.vy[idx], view.color_dir);
+				// choose scalar for coloring 
+				if (dataset_scalar == SCALAR_DENSITY) {
+					scalar = model_fft.rho[idx];
+				}
+				else if (dataset_scalar == SCALAR_VELOCITY) {
+					scalar = (model_fft.vx[idx] * model_fft.vx[idx]) + (model_fft.vy[idx] * model_fft.vy[idx]);
+					scalar *= 100;
+				}
+				else if (dataset_scalar == SCALAR_FORCE) {
+					scalar = (model_fft.fx[idx] * model_fft.fx[idx]) + (model_fft.fy[idx] * model_fft.fy[idx]);
+					scalar *= 100;
+				}
+				//X and Y values depend on chosen dataset vector
+				if (dataset_vector == VECTOR_VELOCITY) {
+					x = model_fft.vx[idx];
+					y = model_fft.vy[idx];
+				}
+				else if (dataset_vector == VECTOR_FORCE) {
+					x = model_fft.fx[idx];
+					y = model_fft.fy[idx];
+				}
+				// compute magnitude of chosen vector dataset
+				magnitude = sqrt((x * x) + (y * y));
+				magnitude *= 10;
+				view.direction_to_color(x, y, scalar, view.scalar_col, color);
+				// use x and y to draw corresponding direction of vector
 				glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
-				glVertex2f((wn + (fftw_real)i * wn) + view.vec_scale * model_fft.vx[idx], (hn + (fftw_real)j * hn) + view.vec_scale * model_fft.vy[idx]);
-			}
+				glVertex2f((wn + (fftw_real)i * wn) + (view.vec_scale + (magnitude * view.vec_scale)) * x, (hn + (fftw_real)j * hn) + (view.vec_scale + (magnitude * view.vec_scale)) * y);
+				//glVertex2f((wn + (fftw_real)i * wn) + view.vec_scale  * x, (hn + (fftw_real)j * hn) + view.vec_scale * y);
+			}	
 		glEnd();
 	}
 
@@ -214,25 +277,53 @@ int main(int argc, char **argv)
 	
 	
 	// define the control window and all of its functions
-	/*GLUI* control_window = GLUI_Master.create_glui_subwindow(main_window, GLUI_SUBWINDOW_RIGHT);
-	// add a panel for changing the dataset being colored
-	GLUI_Panel* dataset_panel = control_window->add_panel("Dataset");
-	GLUI_RadioGroup* dataset_buttons = control_window->add_radiogroup_to_panel(dataset_panel, &dataset);
-	control_window->add_radiobutton_to_group(dataset_buttons, "Density");
-	control_window->add_radiobutton_to_group(dataset_buttons, "Velocity");
-	GLUI_RadioButton* rb = control_window->add_radiobutton_to_group(dataset_buttons, "Force Field");
-	rb->disable();
+	control_window = GLUI_Master.create_glui_subwindow(main_window, GLUI_SUBWINDOW_RIGHT);
 
-	// add a panel for changing the colormap
-	GLUI_Panel* colormap_panel = control_window->add_panel("Colormap");
-	GLUI_RadioGroup* colormap_buttons = control_window->add_radiogroup_to_panel(colormap_panel, &view.scalar_col);	control_window->add_radiobutton_to_group(colormap_buttons, "Black-White");
-	control_window->add_radiobutton_to_group(colormap_buttons, "Grayscale");
-	control_window->add_radiobutton_to_group(colormap_buttons, "Rainbow");
-	control_window->add_radiobutton_to_group(colormap_buttons, "Heatmap");
-	control_window->add_radiobutton_to_group(colormap_buttons, "Diverging");
-	control_window->add_radiobutton_to_group(colormap_buttons, "Blue-Yellow");
-	GLUI_Panel* color_panel = control_window->add_panel("Color options");
-	*/
+
+
+	//--------------define all options for the COLORMAPPING assignment---------------------------//
+	GLUI_Rollout* color_rollout = control_window->add_rollout("Colors", true);
+
+		control_window->add_checkbox_to_panel(color_rollout, "Draw smoke", &view.draw_smoke);
+
+		// add a panel for changing the dataset being colored
+		GLUI_Panel* dataset_panel = control_window->add_panel_to_panel(color_rollout, "Dataset");
+		GLUI_RadioGroup* dataset_buttons = control_window->add_radiogroup_to_panel(dataset_panel, &dataset);
+		control_window->add_radiobutton_to_group(dataset_buttons, "Density");
+		control_window->add_radiobutton_to_group(dataset_buttons, "||Velocity||");
+		control_window->add_radiobutton_to_group(dataset_buttons, "||Force||");
+
+		// add a panel for changing the colormap
+		GLUI_Panel* colormap_panel = control_window->add_panel_to_panel(color_rollout, "Colormap");
+		GLUI_RadioGroup* colormap_buttons = control_window->add_radiogroup_to_panel(colormap_panel, &view.scalar_col);
+		control_window->add_radiobutton_to_group(colormap_buttons, "Black-White");
+		control_window->add_radiobutton_to_group(colormap_buttons, "Grayscale");
+		control_window->add_radiobutton_to_group(colormap_buttons, "Rainbow");
+		control_window->add_radiobutton_to_group(colormap_buttons, "Heatmap");
+		control_window->add_radiobutton_to_group(colormap_buttons, "Diverging");
+		control_window->add_radiobutton_to_group(colormap_buttons, "Blue-Yellow");
+
+		GLUI_Rollout* color_options_rollout = control_window->add_rollout_to_panel(color_rollout, "Color options", false);
+
+
+
+	//--------------define all options for the GLYPH assignment---------------------------//
+		GLUI_Rollout* glyph_rollout = control_window->add_rollout("Glyphs", true);
+			control_window->add_checkbox_to_panel(glyph_rollout, "Draw glyphs", &view.draw_vecs);
+			control_window->add_checkbox_to_panel(glyph_rollout, "Color glyphs", &view.color_dir);
+			GLUI_Panel* scalar_panel = control_window->add_panel_to_panel(glyph_rollout, "Scalar");
+			GLUI_Panel* vector_panel = control_window->add_panel_to_panel(glyph_rollout, "Vector");
+			GLUI_RadioGroup* scalar_buttons = control_window->add_radiogroup_to_panel(scalar_panel, &dataset_scalar);
+			GLUI_RadioGroup* vector_buttons = control_window->add_radiogroup_to_panel(vector_panel, &dataset_vector);
+			control_window->add_radiobutton_to_group(scalar_buttons, "Density");
+			control_window->add_radiobutton_to_group(scalar_buttons, "Velocity");
+			control_window->add_radiobutton_to_group(scalar_buttons, "Force");
+
+			control_window->add_radiobutton_to_group(vector_buttons, "Velocity");
+			control_window->add_radiobutton_to_group(vector_buttons, "Force");
+			
+
+	
 	glutMainLoop();			//calls do_one_simulation_step, keyboard, display, drag, reshape
 	return 0;
 }

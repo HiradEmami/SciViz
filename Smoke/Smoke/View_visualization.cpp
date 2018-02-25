@@ -15,7 +15,7 @@ View_visualization::View_visualization()
 	 color_dir = 0;            //use direction color-coding or not
 	 vec_scale = 1000;			//scaling of hedgehogs
 	 draw_smoke = 1;           //draw the smoke or not
-	 draw_vecs = 0;            //draw the vector field or not
+	 draw_vecs = 1;            //draw the vector field or not
 	 colorbar_width = 50;
 	 COLOR_BLACKWHITE = 0;
 	 COLOR_GRAYSCALE = 1;
@@ -26,7 +26,6 @@ View_visualization::View_visualization()
 	 scalar_col = 0;
 
 }
-
 
 
 //------ VISUALIZATION CODE STARTS HERE -----------------------------------------------------------------
@@ -69,26 +68,44 @@ void View_visualization::set_colormap(Model_color* color,float vy, int dataset)
 
 }
 
-//direction_to_color: Set the current color by mapping a direction vector (x,y), using
-//                    the color mapping method 'method'. If method==1, map the vector direction
-//                    using a rainbow colormap. If method==0, simply use the white color
-void View_visualization::direction_to_color(float x, float y, int method)
+//direction_to_color: Set the current color by mapping the magnitude of a direction vector (x,y), using
+//the selected scalar dataset and colormap                    
+void View_visualization::direction_to_color(float x, float y, float scalar, int colormap, Model_color color)
 {
 	float r, g, b, f;
-	if (method)
-	{
-		f = atan2(y, x) / 3.1415927 + 1;
-		r = f;
-		if (r > 1) r = 2 - r;
-		g = f + .66667;
-		if (g > 2) g -= 2;
-		if (g > 1) g = 2 - g;
-		b = f + 2 * .66667;
-		if (b > 2) b -= 2;
-		if (b > 1) b = 2 - b;
+	if (color_dir) {
+		if (colormap == COLOR_BLACKWHITE)
+		{
+			// get orientation
+			//f = atan2(y, x) / 3.1415927 + 1;
+
+			/*r = f;
+			if (r > 1) r = 2 - r;
+			g = f + .66667;
+			if (g > 2) g -= 2;
+			if (g > 1) g = 2 - g;
+			b = f + 2 * .66667;
+			if (b > 2) b -= 2;
+			if (b > 1) b = 2 - b;*/
+			color.blackwhite(scalar, &r, &g, &b);
+		}
+		else if (colormap == COLOR_GRAYSCALE) {
+			color.grayscale(scalar, &r, &g, &b);
+		}
+		else if (colormap == COLOR_RAINBOW) {
+			color.rainbow(scalar, &r, &g, &b);
+		}
+		else if (colormap == COLOR_HEATMAP) {
+			color.heatmap(scalar, &r, &g, &b);
+		}
+		else if (colormap == COLOR_DIVERGING) {
+			color.diverging(scalar, &r, &g, &b);
+		}
+		else if (colormap == COLOR_TWOCOLORS) {
+			color.interpolate(scalar, &r, &g, &b, 0, 0, 1, 1, 1, 0);
+		}
 	}
-	else
-	{
+	else {
 		r = g = b = 1;
 	}
 	glColor3f(r, g, b);
