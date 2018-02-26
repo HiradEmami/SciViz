@@ -12,6 +12,5 @@ class Controller_keyboard
 public:
 	Controller_keyboard();
 	void keyboard(View_visualization* view, unsigned char key, Model_color* color, Model_fftw* model_fft,  int* frozen, int* data, int* velocity);
-
 };
 

@@ -92,6 +92,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Controller_keyboard.cpp" />
+    <ClCompile Include="controller_viewInteraction.cpp" />
     <ClCompile Include="Model_color.cpp" />
     <ClCompile Include="fluids.cpp" />
     <ClCompile Include="Model_fftw.cpp" />
@@ -99,6 +100,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Controller_keyboard.h" />
+    <ClInclude Include="controller_viewInteraction.h" />
     <ClInclude Include="Model_color.h" />
     <ClInclude Include="Model_fftw.h" />
     <ClInclude Include="View_visualization.h" />
