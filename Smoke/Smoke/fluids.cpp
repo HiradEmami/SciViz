@@ -193,7 +193,8 @@ void visualize(void)
 
 	//draw color bar
 	view.draw_colorbar(&color);
-	view.draw_numbers(&color);
+	
+	
 
 
 }
@@ -263,7 +264,8 @@ int main(int argc, char **argv)
 	main_window = glutCreateWindow("Real-time smoke simulation and visualization");
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);
-	glutIdleFunc(do_one_simulation_step);
+	//glutIdleFunc(do_one_simulation_step);
+	GLUI_Master.set_glutIdleFunc(do_one_simulation_step);
 	glutKeyboardFunc(keyboardFunction);
 	glutMotionFunc(drag);
 
@@ -304,8 +306,14 @@ int main(int argc, char **argv)
 		control_window->add_radiobutton_to_group(colormap_buttons, "Blue-Yellow");
 
 		GLUI_Rollout* color_options_rollout = control_window->add_rollout_to_panel(color_rollout, "Color options", false);
-
-
+		GLUI_Spinner* N_color_spinner = control_window->add_spinner_to_panel(color_options_rollout, "Colors", GLUI_LIVE_FLOAT, &color.NCOLORS);
+		N_color_spinner->set_float_limits(2,255);
+		//GLUI_Spinner* hue_spinner = control_window->add_spinner_to_panel(color_options_rollout, "Hue", GLUI_LIVE_FLOAT, &color.hue_change);
+		//hue_spinner->set_float_limits(0, 1);
+		//hue_spinner->set_float_val(1);
+		//GLUI_Spinner* sat_spinner = control_window->add_spinner_to_panel(color_options_rollout, "Saturation", GLUI_LIVE_FLOAT, &color.saturation_change);
+		//sat_spinner->set_float_limits(0, 1);
+		//sat_spinner->set_float_val(1);
 
 	//--------------define all options for the GLYPH assignment---------------------------//
 		GLUI_Rollout* glyph_rollout = control_window->add_rollout("Glyphs", true);
@@ -321,6 +329,8 @@ int main(int argc, char **argv)
 
 			control_window->add_radiobutton_to_group(vector_buttons, "Velocity");
 			control_window->add_radiobutton_to_group(vector_buttons, "Force");
+
+			
 			
 
 	
