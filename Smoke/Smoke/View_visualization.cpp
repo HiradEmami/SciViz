@@ -24,6 +24,8 @@ View_visualization::View_visualization()
 	 COLOR_DIVERGING = 4;
 	 COLOR_TWOCOLORS = 5;
 	 scalar_col = 0;
+	 //default glyphs
+	 glyph_type = 0;
 
 }
 
@@ -191,7 +193,43 @@ void View_visualization::draw_number(Model_color* color, char value, float posit
 }
 
 
+void View_visualization::set_Glyph_type() {
+	//glyphs parameters
+	//glyph_line = 0;
+	//glyph_line_loop = 1;
+	//glyph_triangle =2;
+	//glyph_triangle Fan = 3;
+	//glyph_QUADS = 4;
+	//glyph_quads_strip = 5;
+	//glyph_POLYGON = 6;
+	//glBegin(GL_LINES);
 
+	switch (glyph_type)
+	{
+	case 0:
+		glBegin(GL_LINES);
+		break;
+	case 1:
+		glBegin(GL_LINE_LOOP);
+		break;
+	case 2:
+		glBegin(GL_TRIANGLES);
+		break;
+	case 3:
+		glBegin(GL_POINTS);
+		break;
+	case 4:
+		glBegin(GL_QUADS);
+		break;
+	case 5:
+		glBegin(GL_POLYGON);
+		break;
+	default:
+		glBegin(GL_LINES);
+		break;
+	}
+
+}
 
 
 void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* color, int* DENSITY, int* VELOCITY, int* FORCE, int* dataset,
@@ -289,7 +327,8 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 	float x, y, scalar, magnitude;
 	if (draw_vecs)
 	{
-		glBegin(GL_LINES);
+		//GL_TRIANGLES
+		set_Glyph_type();
 		for (i = 0; i < DIM; i++)
 			for (j = 0; j < DIM; j++)
 			{

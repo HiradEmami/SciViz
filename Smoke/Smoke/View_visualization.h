@@ -17,6 +17,7 @@ public:
 	void compute_RGB(Model_color* color,float value, float* R, float* G, float* B);
 	void direction_to_color(float x, float y, float scalar, int colormap, Model_color color);
 	void set_colormap(Model_color* color,float vy, int dataset);
+	void set_Glyph_type();
 	void visualize(int DIM, Model_fftw* model_fft, Model_color* color, int* DENSITY, int* VELOCITY, int* FORCE, int* dataset,
 		int* SCALAR_DENSITY, int* SCALAR_VELOCITY, int* SCALAR_FORCE, int* dataset_scalar,
 		int* VECTOR_VELOCITY, int* VECTOR_FORCE, int* dataset_vector);
@@ -37,6 +38,10 @@ public:
 	float colorbar_width;
 	int colorbar_height;
 	int scalar_col;   //set initial colormap to HeatMap
+	//glyphs parameters
+	int glyph_type;
+
+
 
 };
 

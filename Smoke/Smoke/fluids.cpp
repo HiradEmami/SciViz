@@ -77,7 +77,6 @@ void display()
 	glFlush();
 	glutSwapBuffers();
 }
-
 //reshape: Handle window resizing (reshaping) events
 void reshape(int w, int h)
 {
