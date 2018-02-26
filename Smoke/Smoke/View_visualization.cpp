@@ -15,7 +15,7 @@ View_visualization::View_visualization()
 	 color_dir = 0;            //use direction color-coding or not
 	 vec_scale = 1000;			//scaling of hedgehogs
 	 draw_smoke = 1;           //draw the smoke or not
-	 draw_vecs = 0;            //draw the vector field or not
+	 draw_vecs = 1;            //draw the vector field or not
 	 colorbar_width = 50;
 	 COLOR_BLACKWHITE = 0;
 	 COLOR_GRAYSCALE = 1;
@@ -28,11 +28,11 @@ View_visualization::View_visualization()
 }
 
 
-
 //------ VISUALIZATION CODE STARTS HERE -----------------------------------------------------------------
 
 void View_visualization::set_colormap(Model_color* color,float vy, int dataset)
 {
+
 	// change scale parameters depending on dataset
 	if (dataset == 0 ) {
 		color->max = color->density_max;
@@ -65,30 +65,50 @@ void View_visualization::set_colormap(Model_color* color,float vy, int dataset)
 	color->rgb2hsv(R, G, B, &h, &s, &v);
 	color->hsv2rgb(h, s, v, &R, &G, &B);
 
+
 	glColor3f(R, G, B);
 
 }
 
-//direction_to_color: Set the current color by mapping a direction vector (x,y), using
-//                    the color mapping method 'method'. If method==1, map the vector direction
-//                    using a rainbow colormap. If method==0, simply use the white color
-void View_visualization::direction_to_color(float x, float y, int method)
+//direction_to_color: Set the current color by mapping the magnitude of a direction vector (x,y), using
+//the selected scalar dataset and colormap                    
+void View_visualization::direction_to_color(float x, float y, float scalar, int colormap, Model_color color)
 {
+	scalar = color.clamp(scalar);
 	float r, g, b, f;
-	if (method)
-	{
-		f = atan2(y, x) / 3.1415927 + 1;
-		r = f;
-		if (r > 1) r = 2 - r;
-		g = f + .66667;
-		if (g > 2) g -= 2;
-		if (g > 1) g = 2 - g;
-		b = f + 2 * .66667;
-		if (b > 2) b -= 2;
-		if (b > 1) b = 2 - b;
+	if (color_dir) {
+		if (colormap == COLOR_BLACKWHITE)
+		{
+			// get orientation
+			//f = atan2(y, x) / 3.1415927 + 1;
+
+			/*r = f;
+			if (r > 1) r = 2 - r;
+			g = f + .66667;
+			if (g > 2) g -= 2;
+			if (g > 1) g = 2 - g;
+			b = f + 2 * .66667;
+			if (b > 2) b -= 2;
+			if (b > 1) b = 2 - b;*/
+			color.blackwhite(scalar, &r, &g, &b);
+		}
+		else if (colormap == COLOR_GRAYSCALE) {
+			color.grayscale(scalar, &r, &g, &b);
+		}
+		else if (colormap == COLOR_RAINBOW) {
+			color.rainbow(scalar, &r, &g, &b);
+		}
+		else if (colormap == COLOR_HEATMAP) {
+			color.heatmap(scalar, &r, &g, &b);
+		}
+		else if (colormap == COLOR_DIVERGING) {
+			color.diverging(scalar, &r, &g, &b);
+		}
+		else if (colormap == COLOR_TWOCOLORS) {
+			color.interpolate(scalar, &r, &g, &b, 0, 0, 1, 1, 1, 0);
+		}
 	}
-	else
-	{
+	else {
 		r = g = b = 1;
 	}
 	glColor3f(r, g, b);
@@ -126,13 +146,39 @@ void View_visualization::compute_RGB(Model_color* color,float value, float* R, f
 void View_visualization::draw_colorbar(Model_color* color) {
 
 	//the amount of 'strips'
-	int segments = 10;
+	//int segments = 3;
 	float R, G, B, value;
 	//each 'strip' has the same height and width
-	float segment_height = winHeight / segments;
+	//float segment_height = winHeight / segments;
 
 	glBegin(GL_QUAD_STRIP);
-	for (int i = 0; i < segments + 1; i++) {
+
+		// draw colorbar by using three sets of two vertices
+		value = 0;
+		compute_RGB(&*color, value, &R, &G, &B);
+		float h, s, v;
+		color->rgb2hsv(R, G, B, &h, &s, &v);
+		color->hsv2rgb(h, s, v, &R, &G, &B);
+		glColor3f(R, G, B);
+		glVertex2f(colorbar_width, 0);
+		glVertex2f(0, 0);
+
+		value = 0.5;
+		compute_RGB(&*color, value, &R, &G, &B);
+		color->rgb2hsv(R, G, B, &h, &s, &v);
+		color->hsv2rgb(h, s, v, &R, &G, &B);
+		glColor3f(R, G, B);
+		glVertex2f(colorbar_width, winHeight / 2);
+		glVertex2f(0, winHeight / 2);
+
+		value = 1.0;
+		compute_RGB(&*color, value, &R, &G, &B);
+		color->rgb2hsv(R, G, B, &h, &s, &v);
+		color->hsv2rgb(h, s, v, &R, &G, &B);
+		glColor3f(R, G, B);
+		glVertex2f(colorbar_width, winHeight);
+		glVertex2f(0, winHeight);
+	/*for (int i = 0; i < segments + 1; i++) {
 		//the value is in the range [0,1], computed by block number / N
 		value = (float)i / (float)segments;
 		//compute the RGB values using the value of the current strip and the current colormap
@@ -144,17 +190,25 @@ void View_visualization::draw_colorbar(Model_color* color) {
 		//draw the strips with two vertices
 		glVertex2f(colorbar_width, i*segment_height);
 		glVertex2f(0, i*segment_height); 
-	}
-
+	}*/
 	glEnd();
+
+	//draw scale of color bar
+	/*draw_number(color, (char)(color->min), 0);
+	draw_number(color, (char)(color->max), winHeight);
+	draw_number(color, (char)((color->min + color->min) / 2), winHeight / 2);
+
+	draw_number(color, '0', 0);
+	draw_number(color, '1', winHeight - 10);
+	draw_number(color, '0.5', winHeight / 2);*/
 
 }
 
-void View_visualization::draw_numbers(Model_color* color) {
+void View_visualization::draw_number(Model_color* color, char value, float position) {
 	glColor3f(1, 1, 1);
-	glRasterPos2f(winWidth - 20, winHeight - 20);
-
-	glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, (float)color->max);
+	glRasterPos2f(colorbar_width / 2, position);
+	glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, value); 
+	
 }
 
 

@@ -14,9 +14,9 @@ Model_color::Model_color()
 
 	density_max = 1.0;
 	density_min = 0.0;
-	vel_max = 0.1;
+	vel_max = 1.0;
 	vel_min = 0.0;
-
+	
 	max = density_max;
 	min = density_min;
 	
@@ -117,9 +117,9 @@ void Model_color::heatmap(float value, float* R, float* G, float* B)
 	}
 
 
-	/**R = value + 0.2;
-	*G = value * (value/1.2);
-	*B = 0;*/
+	
+	
+
 }
 
 void Model_color::blackwhite(float value, float* R, float* G, float* B)

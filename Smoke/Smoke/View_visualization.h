@@ -4,7 +4,7 @@
 #include <iostream>				//for printing the help text
 #include "Model_color.h"
 #include "Model_fftw.h"
-#include "Controller_keyboard.h"
+//#include "Controller_keyboard.h"
 #include <GL/glui.h>
 
 class View_visualization
@@ -12,10 +12,10 @@ class View_visualization
 public:
 	View_visualization();
 
-	void draw_numbers(Model_color* color);
+	void draw_number(Model_color* color, char value, float position);
 	void draw_colorbar(Model_color* color);
 	void compute_RGB(Model_color* color,float value, float* R, float* G, float* B);
-	void direction_to_color(float x, float y, int method);
+	void direction_to_color(float x, float y, float scalar, int colormap, Model_color color);
 	void set_colormap(Model_color* color,float vy, int dataset);
 	//parameters
 	int DIM;				//size of simulation grid
