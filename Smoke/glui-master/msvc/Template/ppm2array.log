@@ -1,0 +1,5 @@
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(387,5): warning MSB8028: The intermediate directory (Template\) contains files shared from another project (example2.vcxproj, example3.vcxproj, example4.vcxproj, example5.vcxproj, example6.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  ppm.cpp
+  ppm2array.cpp
+  Generating Code...
+  ppm2array.vcxproj -> C:\Users\Hirad Gorgoroth\Documents\GitHub\SciViz\Smoke\glui-master\msvc\Template\ppm2array.exe

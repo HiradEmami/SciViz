@@ -24,6 +24,8 @@ View_visualization::View_visualization()
 	 COLOR_DIVERGING = 4;
 	 COLOR_TWOCOLORS = 5;
 	 scalar_col = 0;
+	 //default glyphs
+	 glyph_type = 0;
 
 }
 
@@ -176,6 +178,7 @@ void View_visualization::draw_colorbar(Model_color* color) {
 		color->rgb2hsv(R, G, B, &h, &s, &v);
 		color->hsv2rgb(h, s, v, &R, &G, &B);
 		glColor3f(R, G, B);
+
 		glVertex2f(winWidth - 150, winHeight);
 		glVertex2f(winWidth - 150 - colorbar_width, winHeight);
 	/*for (int i = 0; i < segments + 1; i++) {
@@ -201,15 +204,200 @@ void View_visualization::draw_colorbar(Model_color* color) {
 	draw_number(color, '0', 0);
 	draw_number(color, '1', winHeight - 10);
 	draw_number(color, '0.5', winHeight / 2);*/
-
+	glEnd();
 }
 
-void View_visualization::draw_number(Model_color* color, unsigned char value, float position) {
+
+
+void View_visualization::draw_number(Model_color* color, char value, float position) {
 	glColor3f(1, 1, 1);
 	glRasterPos2f((colorbar_width - 150) / 2, position);
 	glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, value); 
 	
 	
+}
+
+
+void View_visualization::set_Glyph_type() {
+	//glyphs parameters
+	//glyph_line = 0;
+	//glyph_line_loop = 1;
+	//glyph_triangle =2;
+	//glyph_triangle Fan = 3;
+	//glyph_QUADS = 4;
+	//glyph_quads_strip = 5;
+	//glyph_POLYGON = 6;
+	//glBegin(GL_LINES);
+
+	switch (glyph_type)
+	{
+	case 0:
+		glBegin(GL_LINES);
+		break;
+	case 1:
+		glBegin(GL_LINE_LOOP);
+		break;
+	case 2:
+		glBegin(GL_TRIANGLES);
+		break;
+	case 3:
+		glBegin(GL_POINTS);
+		break;
+	case 4:
+		glBegin(GL_QUADS);
+		break;
+	case 5:
+		glBegin(GL_POLYGON);
+		break;
+	default:
+		glBegin(GL_LINES);
+		break;
+	}
+
+}
+
+
+void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* color, int* DENSITY, int* VELOCITY, int* FORCE, int* dataset,
+	int* SCALAR_DENSITY, int* SCALAR_VELOCITY, int* SCALAR_FORCE, int* dataset_scalar,
+	int* VECTOR_VELOCITY, int* VECTOR_FORCE,int* dataset_vector)
+{
+	int        i, j, idx;
+	fftw_real  wn = (fftw_real)winWidth / (fftw_real)(DIM + 1);   // Grid cell width
+	fftw_real  hn = (fftw_real)winHeight / (fftw_real)(DIM + 1);  // Grid cell height
+	float value0, value1, value2, value3;
+
+	if (draw_smoke)
+	{
+		int idx0, idx1, idx2, idx3;
+		double px0, py0, px1, py1, px2, py2, px3, py3;
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glBegin(GL_TRIANGLES);
+		for (j = 0; j < DIM - 1; j++)            //draw smoke
+		{
+			for (i = 0; i < DIM - 1; i++)
+			{
+				px0 = wn + (fftw_real)i * wn;
+				py0 = hn + (fftw_real)j * hn;
+				idx0 = (j * DIM) + i;
+
+
+				px1 = wn + (fftw_real)i * wn;
+				py1 = hn + (fftw_real)(j + 1) * hn;
+				idx1 = ((j + 1) * DIM) + i;
+
+
+				px2 = wn + (fftw_real)(i + 1) * wn;
+				py2 = hn + (fftw_real)(j + 1) * hn;
+				idx2 = ((j + 1) * DIM) + (i + 1);
+
+
+				px3 = wn + (fftw_real)(i + 1) * wn;
+				py3 = hn + (fftw_real)j * hn;
+				idx3 = (j * DIM) + (i + 1);
+
+				// draw smoke density
+				if (*dataset == *DENSITY) {
+					// scalar values are simply the rho/density values
+					value0 = model_fft->rho[idx0];
+					value1 = model_fft->rho[idx1];
+					value2 = model_fft->rho[idx2];
+					value3 = model_fft->rho[idx3];
+
+				}
+				// draw smoke velocity
+				else if (*dataset == *VELOCITY) {
+					// scalar values are the magnitudes of the vectors
+					value0 = sqrt((model_fft->vx[idx0] * model_fft->vx[idx0]) + (model_fft->vy[idx0] * model_fft->vy[idx0]));
+					value1 = sqrt((model_fft->vx[idx1] * model_fft->vx[idx1]) + (model_fft->vy[idx1] * model_fft->vy[idx1]));
+					value2 = sqrt((model_fft->vx[idx2] * model_fft->vx[idx2]) + (model_fft->vy[idx2] * model_fft->vy[idx2]));
+					value3 = sqrt((model_fft->vx[idx3] * model_fft->vx[idx3]) + (model_fft->vy[idx3] * model_fft->vy[idx3]));
+
+					// increase velocity scalar to make it more visible
+					value0 *= 10;
+					value1 *= 10;
+					value2 *= 10;
+					value3 *= 10;
+
+				}
+
+				// draw smoke force field
+				else if (*dataset == *FORCE) {
+					value0 = sqrt((model_fft->fx[idx0] * model_fft->fx[idx0]) + (model_fft->fy[idx0] * model_fft->fy[idx0]));
+					value1 = sqrt((model_fft->fx[idx1] * model_fft->fx[idx1]) + (model_fft->fy[idx1] * model_fft->fy[idx1]));
+					value2 = sqrt((model_fft->fx[idx2] * model_fft->fx[idx2]) + (model_fft->fy[idx2] * model_fft->fy[idx2]));
+					value3 = sqrt((model_fft->fx[idx3] * model_fft->fx[idx3]) + (model_fft->fy[idx3] * model_fft->fy[idx3]));
+
+					// increase force scalar to make it more visible
+					value0 *= 20;
+					value1 *= 20;
+					value2 *= 20;
+					value3 *= 20;
+
+
+				}
+
+				set_colormap(&*color, value0, *dataset);    glVertex2f(px0, py0);
+				set_colormap(&*color, value1, *dataset);    glVertex2f(px1, py1);
+				set_colormap(&*color, value2, *dataset);    glVertex2f(px2, py2);
+
+				set_colormap(&*color, value0, *dataset);    glVertex2f(px0, py0);
+				set_colormap(&*color, value2, *dataset);    glVertex2f(px2, py2);
+				set_colormap(&*color, value3, *dataset);    glVertex2f(px3, py3);
+			}
+		}
+		glEnd();
+	}
+
+	//draw vector field by using glyphs
+	float x, y, scalar, magnitude;
+	if (draw_vecs)
+	{
+		//GL_TRIANGLES
+		set_Glyph_type();
+		for (i = 0; i < DIM; i++)
+			for (j = 0; j < DIM; j++)
+			{
+				idx = (j * DIM) + i;
+				// choose scalar for coloring 
+				if (*dataset_scalar == *SCALAR_DENSITY) {
+					scalar = model_fft->rho[idx];
+				}
+				else if (*dataset_scalar == *SCALAR_VELOCITY) {
+					scalar = (model_fft->vx[idx] * model_fft->vx[idx]) + (model_fft->vy[idx] * model_fft->vy[idx]);
+					scalar *= 100;
+				}
+				else if (*dataset_scalar == *SCALAR_FORCE) {
+					scalar = (model_fft->fx[idx] * model_fft->fx[idx]) + (model_fft->fy[idx] * model_fft->fy[idx]);
+					scalar *= 100;
+				}
+				//X and Y values depend on chosen dataset vector
+				if (*dataset_vector == *VECTOR_VELOCITY) {
+					x = model_fft->vx[idx];
+					y = model_fft->vy[idx];
+				}
+				else if (*dataset_vector == *VECTOR_FORCE) {
+					x = model_fft->fx[idx];
+					y = model_fft->fy[idx];
+				}
+				// compute magnitude of chosen vector dataset
+				magnitude = sqrt((x * x) + (y * y));
+				magnitude *= 10;
+				direction_to_color(x, y, scalar, scalar_col, *color);
+				// use x and y to draw corresponding direction of vector
+				glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
+				glVertex2f((wn + (fftw_real)i * wn) + (vec_scale + (magnitude * vec_scale)) * x, (hn + (fftw_real)j * hn) + (vec_scale + (magnitude * vec_scale)) * y);
+				//glVertex2f((wn + (fftw_real)i * wn) + view.vec_scale  * x, (hn + (fftw_real)j * hn) + view.vec_scale * y);
+			}
+		glEnd();
+	}
+
+
+	//draw color bar
+	draw_colorbar(&*color);
+
+
+
+
 }
 
 

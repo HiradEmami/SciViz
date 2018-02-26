@@ -1,0 +1,2 @@
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(387,5): warning MSB8028: The intermediate directory (.\Debug\) contains files shared from another project (example2.vcxproj, GLUI.vcxproj, _glui library.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+cl : Command line error D8016: '/ZI' and '/Gy-' command-line options are incompatible

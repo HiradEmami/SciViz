@@ -62,6 +62,7 @@ void Controller_keyboard::keyboard(View_visualization* view,unsigned char key, M
 	case 'h': color->hue_change -= 0.01; if (color->hue_change < 0) color->hue_change = 0;  break;
 	case 'H':color->hue_change += 0.01; if (color->hue_change > 1) color->hue_change = 1;  break;
 	case 'd': *data += 1; if (*data > 2) *data = 0; break;
+	case 'f': view->glyph_type += 1; if (view->glyph_type > 5)view->glyph_type = 0;break;
 	}
 	
 }

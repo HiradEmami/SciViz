@@ -9,6 +9,7 @@
 #include "Model_fftw.h"
 #include "Controller_keyboard.h"
 #include "View_visualization.h"
+#include "controller_viewInteraction.h"
 #include <GL/glui.h>
 
 
@@ -36,6 +37,7 @@ Model_fftw model_fft;
 Model_color color;
 View_visualization view;
 Controller_keyboard keyboard;
+controller_viewInteraction interaction;
 
 int main_window = 1;
 GLUI* control_window;
@@ -61,6 +63,7 @@ void do_one_simulation_step(void)
 
 void visualize(void)
 {
+	/*
 	int        i, j, idx;
 	fftw_real  wn = (fftw_real)view.winWidth / (fftw_real)(DIM + 1);   // Grid cell width
 	fftw_real  hn = (fftw_real)view.winHeight / (fftw_real)(DIM + 1);  // Grid cell height
@@ -199,7 +202,10 @@ void visualize(void)
 
 	
 	
-
+	*/
+	view.visualize( DIM, &model_fft, &color, &DENSITY, &VELOCITY, &FORCE, &dataset,
+		&SCALAR_DENSITY, &SCALAR_VELOCITY, &SCALAR_FORCE, &dataset_scalar,
+		&VECTOR_VELOCITY, &VECTOR_FORCE, &dataset_vector);
 
 }
 
@@ -212,47 +218,17 @@ void display()
 	glFlush();
 	glutSwapBuffers();
 }
-
 //reshape: Handle window resizing (reshaping) events
 void reshape(int w, int h)
 {
-	glViewport(0.0f, 0.0f, (GLfloat)w, (GLfloat)h);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluOrtho2D(0.0, (GLdouble)w, 0.0, (GLdouble)h);
-	view.winWidth = w; view.winHeight = h;
+	interaction.reshape(&view,&w,&h);
 }
-
-// drag: When the user drags with the mouse, add a force that corresponds to the direction of the mouse
-//       cursor movement. Also inject some new matter into the field at the mouse location.
-void drag(int mx, int my)
-{
-	int xi, yi, X, Y; double  dx, dy, len;
-	static int lmx = 0, lmy = 0;				//remembers last mouse location
-
-												// Compute the array index that corresponds to the cursor location 
-	xi = (int)model_fft.clamp((double)(DIM + 1) * ((double)mx / (double)view.winWidth));
-	yi = (int)model_fft.clamp((double)(DIM + 1) * ((double)(view.winHeight - my) / (double)view.winHeight));
-
-	X = xi; Y = yi;
-
-	if (X > (DIM - 1))  X = DIM - 1; if (Y > (DIM - 1))  Y = DIM - 1;
-	if (X < 0) X = 0; if (Y < 0) Y = 0;
-
-	// Add force at the cursor location 
-	my = view.winHeight - my;
-	dx = mx - lmx; dy = my - lmy;
-	len = sqrt(dx * dx + dy * dy);
-	if (len != 0.0) { dx *= 0.1 / len; dy *= 0.1 / len; }
-	model_fft.fx[Y * DIM + X] += dx;
-	model_fft.fy[Y * DIM + X] += dy;
-	model_fft.rho[Y * DIM + X] = 10.0f;
-	lmx = mx; lmy = my;
-}
-
 void keyboardFunction(unsigned char key, int x, int y) {
 	keyboard.keyboard(&view,key,&color,&model_fft,  &frozen,&dataset,&VELOCITY);
 	
+}
+void drag(int mx, int my) {
+	interaction.drag(&view,&model_fft, DIM, &mx, &my);
 }
 
 
@@ -260,6 +236,13 @@ void keyboardFunction(unsigned char key, int x, int y) {
 
 int main(int argc, char **argv)
 {
+	// Initialize models, view and controller
+	model_fft = Model_fftw();
+	color = Model_color();
+	view = View_visualization();
+	keyboard = Controller_keyboard();
+	interaction = controller_viewInteraction();
+
 	// Initialize the main visualization window
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
@@ -273,11 +256,7 @@ int main(int argc, char **argv)
 	glutKeyboardFunc(keyboardFunction);
 	glutMotionFunc(drag);
 
-	// Initialize models, view and controller
-	model_fft = Model_fftw();
-	color = Model_color();
-	view = View_visualization();
-	keyboard = Controller_keyboard();
+	
 
 	model_fft.init_simulation(DIM);	//initialize the simulation data structures	
 	
