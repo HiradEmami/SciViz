@@ -160,24 +160,24 @@ void View_visualization::draw_colorbar(Model_color* color) {
 		color->rgb2hsv(R, G, B, &h, &s, &v);
 		color->hsv2rgb(h, s, v, &R, &G, &B);
 		glColor3f(R, G, B);
-		glVertex2f(colorbar_width, 0);
-		glVertex2f(0, 0);
+		glVertex2f(winWidth - 150, 0);
+		glVertex2f(winWidth - 150 - colorbar_width, 0);
 
 		value = 0.5;
 		compute_RGB(&*color, value, &R, &G, &B);
 		color->rgb2hsv(R, G, B, &h, &s, &v);
 		color->hsv2rgb(h, s, v, &R, &G, &B);
 		glColor3f(R, G, B);
-		glVertex2f(colorbar_width, winHeight / 2);
-		glVertex2f(0, winHeight / 2);
+		glVertex2f(winWidth - 150, winHeight / 2);
+		glVertex2f(winWidth - 150 - colorbar_width, winHeight / 2);
 
 		value = 1.0;
 		compute_RGB(&*color, value, &R, &G, &B);
 		color->rgb2hsv(R, G, B, &h, &s, &v);
 		color->hsv2rgb(h, s, v, &R, &G, &B);
 		glColor3f(R, G, B);
-		glVertex2f(colorbar_width, winHeight);
-		glVertex2f(0, winHeight);
+		glVertex2f(winWidth - 150, winHeight);
+		glVertex2f(winWidth - 150 - colorbar_width, winHeight);
 	/*for (int i = 0; i < segments + 1; i++) {
 		//the value is in the range [0,1], computed by block number / N
 		value = (float)i / (float)segments;
@@ -204,10 +204,11 @@ void View_visualization::draw_colorbar(Model_color* color) {
 
 }
 
-void View_visualization::draw_number(Model_color* color, char value, float position) {
+void View_visualization::draw_number(Model_color* color, unsigned char value, float position) {
 	glColor3f(1, 1, 1);
-	glRasterPos2f(colorbar_width / 2, position);
+	glRasterPos2f((colorbar_width - 150) / 2, position);
 	glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, value); 
+	
 	
 }
 

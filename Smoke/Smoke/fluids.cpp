@@ -193,6 +193,10 @@ void visualize(void)
 
 	//draw color bar
 	view.draw_colorbar(&color);
+	//view.draw_number(&color, color.max,50);
+
+
+
 	
 	
 
@@ -259,7 +263,7 @@ int main(int argc, char **argv)
 	// Initialize the main visualization window
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-	glutInitWindowSize(800, 600);
+	glutInitWindowSize(1000, 600);
 
 	main_window = glutCreateWindow("Real-time smoke simulation and visualization");
 	glutDisplayFunc(display);
