@@ -45,6 +45,10 @@ void View_visualization::set_colormap(Model_color* color,float vy, int dataset)
 		color->min = color->vel_min;
 	}
 
+	//color->density_max = color->vel_max;
+	//color->density_min = color->vel_min;
+
+
 	vy = color->clamp(vy);
 	vy *= color->NCOLORS; vy = (int)vy; vy /= color->NCOLORS;
 	float R, G, B;
@@ -152,6 +156,7 @@ void View_visualization::draw_colorbar(Model_color* color) {
 	float R, G, B, value;
 	//each 'strip' has the same height and width
 	//float segment_height = winHeight / segments;
+	float colorbar_height = winHeight / 10;
 
 	glBegin(GL_QUAD_STRIP);
 
@@ -162,16 +167,16 @@ void View_visualization::draw_colorbar(Model_color* color) {
 		color->rgb2hsv(R, G, B, &h, &s, &v);
 		color->hsv2rgb(h, s, v, &R, &G, &B);
 		glColor3f(R, G, B);
-		glVertex2f(winWidth - 150, 0);
-		glVertex2f(winWidth - 150 - colorbar_width, 0);
+		glVertex2f(0, 0);
+		glVertex2f(0, colorbar_height);
 
 		value = 0.5;
 		compute_RGB(&*color, value, &R, &G, &B);
 		color->rgb2hsv(R, G, B, &h, &s, &v);
 		color->hsv2rgb(h, s, v, &R, &G, &B);
 		glColor3f(R, G, B);
-		glVertex2f(winWidth - 150, winHeight / 2);
-		glVertex2f(winWidth - 150 - colorbar_width, winHeight / 2);
+		glVertex2f(winWidth / 2 - winWidth / 8, 0);
+		glVertex2f(winWidth / 2 - winWidth / 8, colorbar_height);
 
 		value = 1.0;
 		compute_RGB(&*color, value, &R, &G, &B);
@@ -179,40 +184,28 @@ void View_visualization::draw_colorbar(Model_color* color) {
 		color->hsv2rgb(h, s, v, &R, &G, &B);
 		glColor3f(R, G, B);
 
-		glVertex2f(winWidth - 150, winHeight);
-		glVertex2f(winWidth - 150 - colorbar_width, winHeight);
-	/*for (int i = 0; i < segments + 1; i++) {
-		//the value is in the range [0,1], computed by block number / N
-		value = (float)i / (float)segments;
-		//compute the RGB values using the value of the current strip and the current colormap
-		compute_RGB(&*color,value, &R, &G, &B);
-		float h, s, v;
-		color->rgb2hsv(R, G, B, &h, &s, &v);
-		color->hsv2rgb(h, s, v, &R, &G, &B);
-		glColor3f(R, G, B);
-		//draw the strips with two vertices
-		glVertex2f(colorbar_width, i*segment_height);
-		glVertex2f(0, i*segment_height); 
-	}*/
+		glVertex2f(winWidth - (winWidth / 5), 0);
+		glVertex2f(winWidth - (winWidth / 5), colorbar_height);
 	glEnd();
 
-	//draw scale of color bar
-	/*draw_number(color, (char)(color->min), 0);
-	draw_number(color, (char)(color->max), winHeight);
-	draw_number(color, (char)((color->min + color->min) / 2), winHeight / 2);
+	draw_number(&*color, std::to_string(color->min), 5);
+	draw_number(&*color, std::to_string((color->max + color->min) / 2), winWidth /2  - winWidth / 8);
+	draw_number(&*color, std::to_string(color->max), winWidth - (winWidth / 5) - 20);
 
-	draw_number(color, '0', 0);
-	draw_number(color, '1', winHeight - 10);
-	draw_number(color, '0.5', winHeight / 2);*/
-	glEnd();
+
 }
 
 
 
-void View_visualization::draw_number(Model_color* color, char value, float position) {
+void View_visualization::draw_number(Model_color* color, std::string value, float position) {
 	glColor3f(1, 1, 1);
-	glRasterPos2f((colorbar_width - 150) / 2, position);
-	glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, value); 
+	for (int i = 0; i < 3; i++) {
+		glRasterPos2f(position + (5*i), winHeight / 10);
+		//glRasterPos2f(i*5, position);
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, value[i]);
+		
+	}
+	
 	
 	
 }

@@ -12,7 +12,7 @@ class View_visualization
 public:
 	View_visualization();
 
-	void draw_number(Model_color* color, char value, float position);
+	void draw_number(Model_color* color, std::string value, float position);
 	void draw_colorbar(Model_color* color);
 	void compute_RGB(Model_color* color,float value, float* R, float* G, float* B);
 	void direction_to_color(float x, float y, float scalar, int colormap, Model_color color);

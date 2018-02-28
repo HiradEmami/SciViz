@@ -288,15 +288,23 @@ int main(int argc, char **argv)
 		control_window->add_radiobutton_to_group(colormap_buttons, "Diverging");
 		control_window->add_radiobutton_to_group(colormap_buttons, "Blue-Yellow");
 
-		GLUI_Rollout* color_options_rollout = control_window->add_rollout_to_panel(color_rollout, "Color options", false);
-		GLUI_Spinner* N_color_spinner = control_window->add_spinner_to_panel(color_options_rollout, "Colors", GLUI_LIVE_FLOAT, &color.NCOLORS);
+		GLUI_Rollout* color_options_rollout = control_window->add_rollout_to_panel(color_rollout, "Color options", true);
+		GLUI_Spinner* N_color_spinner = control_window->add_spinner_to_panel(color_options_rollout, "Colors", GLUI_SPINNER_INT, &color.NCOLORS);
 		N_color_spinner->set_float_limits(2,255);
-		//GLUI_Spinner* hue_spinner = control_window->add_spinner_to_panel(color_options_rollout, "Hue", GLUI_LIVE_FLOAT, &color.hue_change);
-		//hue_spinner->set_float_limits(0, 1);
-		//hue_spinner->set_float_val(1);
-		//GLUI_Spinner* sat_spinner = control_window->add_spinner_to_panel(color_options_rollout, "Saturation", GLUI_LIVE_FLOAT, &color.saturation_change);
-		//sat_spinner->set_float_limits(0, 1);
-		//sat_spinner->set_float_val(1);
+
+		GLUI_Spinner* min_spinner = control_window->add_spinner_to_panel(color_options_rollout, "Fmin", GLUI_SPINNER_FLOAT, &color.density_min);
+		GLUI_Spinner* max_spinner = control_window->add_spinner_to_panel(color_options_rollout, "Fmax", GLUI_SPINNER_FLOAT, &color.density_max);
+		min_spinner->set_float_limits(0, 1);
+		max_spinner->set_float_limits(0, 1);
+		
+		GLUI_Spinner* hue_spinner = control_window->add_spinner_to_panel(color_options_rollout, "Hue", GLUI_SPINNER_FLOAT, &color.hue_change);
+		hue_spinner->set_float_limits(0, 1);
+		hue_spinner->set_float_val(1);
+
+		GLUI_Spinner* sat_spinner = control_window->add_spinner_to_panel(color_options_rollout, "Saturation", GLUI_SPINNER_FLOAT, &color.saturation_change);
+		sat_spinner->set_float_limits(0, 1);
+		sat_spinner->set_float_val(1);
+		
 
 	//--------------define all options for the GLYPH assignment---------------------------//
 		GLUI_Rollout* glyph_rollout = control_window->add_rollout("Glyphs", true);
