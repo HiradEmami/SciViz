@@ -6,8 +6,19 @@
 #include "Model_fftw.h"
 #include "Controller_keyboard.h"
 #include <GL/glui.h>
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 
+const GLfloat light_ambient[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+const GLfloat light_diffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+const GLfloat light_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+const GLfloat light_position[] = { 2.0f, 5.0f, 5.0f, 0.0f };
+
+const GLfloat mat_ambient[] = { 0.7f, 0.7f, 0.7f, 1.0f };
+const GLfloat mat_diffuse[] = { 0.8f, 0.8f, 0.8f, 1.0f };
+const GLfloat mat_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+const GLfloat high_shininess[] = { 100.0f };
 
 View_visualization::View_visualization()
 {
@@ -16,6 +27,7 @@ View_visualization::View_visualization()
 	 vec_scale = 1000;			//scaling of hedgehogs
 	 draw_smoke = 1;           //draw the smoke or not
 	 draw_vecs = 1;            //draw the vector field or not
+	 use_clamp = 1;
 	 colorbar_width = 50;
 	 COLOR_BLACKWHITE = 0;
 	 COLOR_GRAYSCALE = 1;
@@ -27,16 +39,18 @@ View_visualization::View_visualization()
 	 //default glyphs
 	 glyph_type = 0;
 
-}
+	 glyph_samplingrateX = 1;
+	 glyph_samplingrateY = 1;
 
+}
 
 //------ VISUALIZATION CODE STARTS HERE -----------------------------------------------------------------
 
-void View_visualization::set_colormap(Model_color* color,float vy, int dataset)
+void View_visualization::set_colormap(Model_color* color, float vy, int dataset)
 {
 
 	// change scale parameters depending on dataset
-	if (dataset == 0 ) {
+	if (dataset == 0) {
 		color->max = color->density_max;
 		color->min = color->density_min;
 	}
@@ -48,8 +62,9 @@ void View_visualization::set_colormap(Model_color* color,float vy, int dataset)
 	//color->density_max = color->vel_max;
 	//color->density_min = color->vel_min;
 
-
-	vy = color->clamp(vy);
+	if (use_clamp) {
+		vy = color->clamp(vy);
+	}
 	vy *= color->NCOLORS; vy = (int)vy; vy /= color->NCOLORS;
 	float R, G, B;
 	if (scalar_col == COLOR_BLACKWHITE)
@@ -78,24 +93,13 @@ void View_visualization::set_colormap(Model_color* color,float vy, int dataset)
 
 //direction_to_color: Set the current color by mapping the magnitude of a direction vector (x,y), using
 //the selected scalar dataset and colormap                    
-void View_visualization::direction_to_color(float x, float y, float scalar, int colormap, Model_color color)
+void View_visualization::direction_to_color(float scalar, int colormap, Model_color color)
 {
 	scalar = color.clamp(scalar);
 	float r, g, b, f;
 	if (color_dir) {
 		if (colormap == COLOR_BLACKWHITE)
 		{
-			// get orientation
-			//f = atan2(y, x) / 3.1415927 + 1;
-
-			/*r = f;
-			if (r > 1) r = 2 - r;
-			g = f + .66667;
-			if (g > 2) g -= 2;
-			if (g > 1) g = 2 - g;
-			b = f + 2 * .66667;
-			if (b > 2) b -= 2;
-			if (b > 1) b = 2 - b;*/
 			color.blackwhite(scalar, &r, &g, &b);
 		}
 		else if (colormap == COLOR_GRAYSCALE) {
@@ -167,16 +171,16 @@ void View_visualization::draw_colorbar(Model_color* color) {
 		color->rgb2hsv(R, G, B, &h, &s, &v);
 		color->hsv2rgb(h, s, v, &R, &G, &B);
 		glColor3f(R, G, B);
-		glVertex2f(0, 0);
-		glVertex2f(0, colorbar_height);
+		glVertex3f(0, 0, 0);
+		glVertex3f(0, colorbar_height, 0);
 
 		value = 0.5;
 		compute_RGB(&*color, value, &R, &G, &B);
 		color->rgb2hsv(R, G, B, &h, &s, &v);
 		color->hsv2rgb(h, s, v, &R, &G, &B);
 		glColor3f(R, G, B);
-		glVertex2f(winWidth / 2 - winWidth / 8, 0);
-		glVertex2f(winWidth / 2 - winWidth / 8, colorbar_height);
+		glVertex3f(winWidth / 2 - winWidth / 8, 0, 0);
+		glVertex3f(winWidth / 2 - winWidth / 8, colorbar_height, 0);
 
 		value = 1.0;
 		compute_RGB(&*color, value, &R, &G, &B);
@@ -184,8 +188,8 @@ void View_visualization::draw_colorbar(Model_color* color) {
 		color->hsv2rgb(h, s, v, &R, &G, &B);
 		glColor3f(R, G, B);
 
-		glVertex2f(winWidth - (winWidth / 5), 0);
-		glVertex2f(winWidth - (winWidth / 5), colorbar_height);
+		glVertex3f(winWidth - (winWidth / 5), 0, 0);
+		glVertex3f(winWidth - (winWidth / 5), colorbar_height, 0);
 	glEnd();
 
 	draw_number(&*color, std::to_string(color->min), 5);
@@ -248,6 +252,7 @@ void View_visualization::set_Glyph_type() {
 	}
 
 }
+
 
 
 void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* color, int* DENSITY, int* VELOCITY, int* FORCE, int* dataset,
@@ -340,15 +345,33 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 		}
 		glEnd();
 	}
+	
+	/*glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_COLOR_MATERIAL);
+	glMatrixMode(GL_MODELVIEW);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
+	glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+	glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);*/
+	
 	//draw vector field by using glyphs
+	
 	float x, y, scalar, magnitude;
 	if (draw_vecs)
 	{
+		//glBegin(GL_LINES);
 		//GL_TRIANGLES
-		set_Glyph_type();
-		for (i = 0; i < DIM; i++)
-			for (j = 0; j < DIM; j++)
+		//set_Glyph_type();
+		for (i = 0; i < DIM; i+= glyph_samplingrateX)
+			for (j = 0; j < DIM; j+= glyph_samplingrateY)
 			{
 				idx = (j * DIM) + i;
 				// choose scalar for coloring 
@@ -357,11 +380,11 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 				}
 				else if (*dataset_scalar == *SCALAR_VELOCITY) {
 					scalar = (model_fft->vx[idx] * model_fft->vx[idx]) + (model_fft->vy[idx] * model_fft->vy[idx]);
-					scalar *= 100;
+					scalar *= 1000;
 				}
 				else if (*dataset_scalar == *SCALAR_FORCE) {
 					scalar = (model_fft->fx[idx] * model_fft->fx[idx]) + (model_fft->fy[idx] * model_fft->fy[idx]);
-					scalar *= 100;
+					scalar *= 1000;
 				}
 				//X and Y values depend on chosen dataset vector
 				if (*dataset_vector == *VECTOR_VELOCITY) {
@@ -375,17 +398,46 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 				// compute magnitude of chosen vector dataset
 				magnitude = sqrt((x * x) + (y * y));
 				magnitude *= 10;
-				direction_to_color(x, y, scalar, scalar_col, *color);
+				direction_to_color(scalar, scalar_col, *color);
 				// use x and y to draw corresponding direction of vector
-				glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
-				glVertex2f((wn + (fftw_real)i * wn) + (vec_scale + (magnitude * vec_scale)) * x, (hn + (fftw_real)j * hn) + (vec_scale + (magnitude * vec_scale)) * y);
+				//glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
+				//glVertex2f((wn + (fftw_real)i * wn) + (vec_scale + (magnitude * vec_scale)) * x, (hn + (fftw_real)j * hn) + (vec_scale + (magnitude * vec_scale)) * y);
 				//glVertex2f((wn + (fftw_real)i * wn) + view.vec_scale  * x, (hn + (fftw_real)j * hn) + view.vec_scale * y);
+
+				float radius = wn/4 + magnitude*wn;
+				float max_radius = wn / 3;
+
+				if (radius > max_radius) radius = max_radius;
+			
+
+				float angle;
+				float cosa = model_fft->vx[idx];
+				float sina = model_fft->vy[idx];
+
+				float a;
+				
+				
+				glPushMatrix();									//2.7.  Translate and rotate the canonical cone so as to be centered at the
+				glTranslatef(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn, 0);						//      current vertex, and aligned with the current vector
+				a = atan2(model_fft->vy[idx], model_fft->vx[idx]);
+				angle = 180 * a / M_PI;
+				glRotatef(90-angle, 0.0, 0.0, -1.0);
+				glRotatef(-90.0, 1.0, 0.0, 0.0);
+				glutSolidCone(radius, radius*2, 3,3);			//2.8.  Draw the cone
+				//glutSolidCone(radius, radius * 2, 20, 1);
+				//glTranslatef(-(wn + (fftw_real)i * wn), -(hn + (fftw_real)j * hn),0);
+				glPopMatrix(); 
+				
+				
+				
 			}
+
 		glEnd();
+		
+		//draw color bar
 	}
-
-
-	//draw color bar
+	
+	//glDisable(GL_LIGHTING);
 	draw_colorbar(&*color);
 
 

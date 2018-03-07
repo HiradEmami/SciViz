@@ -11,6 +11,7 @@
 #include "View_visualization.h"
 #include "controller_viewInteraction.h"
 #include <GL/glui.h>
+#include "wtypes.h"
 
 
 const int DIM = 50;				//size of simulation grid
@@ -231,6 +232,20 @@ void drag(int mx, int my) {
 	interaction.drag(&view,&model_fft, DIM, &mx, &my);
 }
 
+// Get the horizontal and vertical screen sizes in pixel
+void GetDesktopResolution(int* horizontal, int* vertical)
+{
+	RECT desktop;
+	// Get a handle to the desktop window
+	const HWND hDesktop = GetDesktopWindow();
+	// Get the size of screen to the variable desktop
+	GetWindowRect(hDesktop, &desktop);
+	// The top left corner will have coordinates (0,0)
+	// and the bottom right corner will have coordinates
+	// (horizontal, vertical)
+	*horizontal = desktop.right;
+	*vertical = desktop.bottom;
+}
 
 
 
@@ -246,15 +261,19 @@ int main(int argc, char **argv)
 	// Initialize the main visualization window
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-	glutInitWindowSize(1000, 600);
+	int horizontal, vertical;
+	GetDesktopResolution(&horizontal, &vertical);
+	glutInitWindowSize(horizontal, vertical);
 
 	main_window = glutCreateWindow("Real-time smoke simulation and visualization");
-	glutDisplayFunc(display);
-	glutReshapeFunc(reshape);
+	GLUI_Master.set_glutDisplayFunc(display);
+	//glutDisplayFunc(display);
+	//GLUI_Master.ReshapeFunc(reshape);
+	GLUI_Master.set_glutReshapeFunc(reshape);
 	//glutIdleFunc(do_one_simulation_step);
 	GLUI_Master.set_glutIdleFunc(do_one_simulation_step);
 	glutKeyboardFunc(keyboardFunction);
-	glutMotionFunc(drag);
+	glutMotionFunc(drag); 
 
 	
 
@@ -270,6 +289,7 @@ int main(int argc, char **argv)
 	GLUI_Rollout* color_rollout = control_window->add_rollout("Colors", true);
 
 		control_window->add_checkbox_to_panel(color_rollout, "Draw smoke", &view.draw_smoke);
+		control_window->add_checkbox_to_panel(color_rollout, "Clamp", &view.use_clamp);
 
 		// add a panel for changing the dataset being colored
 		GLUI_Panel* dataset_panel = control_window->add_panel_to_panel(color_rollout, "Dataset");
@@ -289,7 +309,7 @@ int main(int argc, char **argv)
 		control_window->add_radiobutton_to_group(colormap_buttons, "Blue-Yellow");
 
 		GLUI_Rollout* color_options_rollout = control_window->add_rollout_to_panel(color_rollout, "Color options", true);
-		GLUI_Spinner* N_color_spinner = control_window->add_spinner_to_panel(color_options_rollout, "Colors", GLUI_SPINNER_INT, &color.NCOLORS);
+		GLUI_Spinner* N_color_spinner = control_window->add_spinner_to_panel(color_options_rollout, "Colorbands", GLUI_SPINNER_INT, &color.NCOLORS);
 		N_color_spinner->set_float_limits(2,255);
 
 		GLUI_Spinner* min_spinner = control_window->add_spinner_to_panel(color_options_rollout, "Fmin", GLUI_SPINNER_FLOAT, &color.density_min);
@@ -321,6 +341,12 @@ int main(int argc, char **argv)
 			control_window->add_radiobutton_to_group(vector_buttons, "Velocity");
 			control_window->add_radiobutton_to_group(vector_buttons, "Force");
 
+
+			GLUI_Spinner* N_sampleX_spinner = control_window->add_spinner_to_panel(glyph_rollout, "Col sampling", GLUI_SPINNER_INT, &view.glyph_samplingrateX);
+			N_sampleX_spinner->set_float_limits(1, 50);
+
+			GLUI_Spinner* N_sampleY_spinner = control_window->add_spinner_to_panel(glyph_rollout, "Row sampling", GLUI_SPINNER_INT, &view.glyph_samplingrateY);
+			N_sampleY_spinner->set_float_limits(1, 50);
 			
 			
 

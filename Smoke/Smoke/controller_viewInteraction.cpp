@@ -44,4 +44,5 @@ void controller_viewInteraction::reshape(View_visualization* view,int* w, int* h
 	glLoadIdentity();
 	gluOrtho2D(0.0, (GLdouble)*w, 0.0, (GLdouble)*h);
 	view->winWidth = *w; view->winHeight = *h;
+
 }
