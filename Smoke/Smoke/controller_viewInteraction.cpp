@@ -2,16 +2,10 @@
 #include "Model_fftw.h"
 #include "View_visualization.h"
 
-
-
 controller_viewInteraction::controller_viewInteraction()
 {
-	MOUSEx = 0; 
-	MOUSEy = 0;
+
 }
-
-
-
 // drag: When the user drags with the mouse, add a force that corresponds to the direction of the mouse
 //       cursor movement. Also inject some new matter into the field at the mouse location.
 void controller_viewInteraction::drag(View_visualization* view,Model_fftw* model_fft, int DIM, int* mx, int* my)
@@ -38,7 +32,6 @@ void controller_viewInteraction::drag(View_visualization* view,Model_fftw* model
 	model_fft->rho[Y * DIM + X] = 10.0f;
 	lmx = *mx; lmy = *my;
 }
-
 void controller_viewInteraction::reshape(View_visualization* view,int* w, int* h)
 {
 	glViewport(0.0f, 0.0f, (GLfloat)*w, (GLfloat)*h);
@@ -48,31 +41,35 @@ void controller_viewInteraction::reshape(View_visualization* view,int* w, int* h
 	view->winWidth = *w; view->winHeight = *h;
 
 }
-
-
-
-void controller_viewInteraction::setX(int x)
+void controller_viewInteraction::setX(int x, View_visualization* view)
 {
-	MOUSEx = x;
+	view->MOUSEx = x;
 }
-
-void controller_viewInteraction::setY(int y)
+void controller_viewInteraction::setY(int y, View_visualization* view)
 {
-	MOUSEy = y;
+		//parameters
+	 view->MOUSEy = y;
 }
-void controller_viewInteraction::mouse(int* btn, int* state, int* x, int* y)
+void controller_viewInteraction::mouse(int* btn, int* state, int* x, int* y, View_visualization* view)
 {
 	if (*btn == GLUT_LEFT_BUTTON && *state == GLUT_DOWN)
 	{
-		setX(*x);
-		setY(*y);
+		view->draw_steamline = 1;
+		setX(*x,&*view);
+		setY(*y,&*view);
 		//drawSquare(MOUSEx,HEIGHT-MOUSEy);
 		glutPostRedisplay();
 
 		printf("The Coordinate of the selected locations:\n");
 		printf("==========================================\n");
 		printf("X = %d\nY= %d\n", *x, *y);
+		printf("\n%f, %f", view->MOUSEx, view->MOUSEy);
 		printf("==========================================\n");
+
+		float x2 = (float)*x;
+		float y2 = (float)*y;
+		GLfloat radius = 3.0;
+		
 	}
 	if (*btn == GLUT_RIGHT_BUTTON && *state == GLUT_DOWN)
 	{

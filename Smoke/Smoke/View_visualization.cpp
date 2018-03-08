@@ -42,13 +42,18 @@ View_visualization::View_visualization()
 	 glyph_samplingrateX = 1;
 	 glyph_samplingrateY = 1;
 
+	 //steamline parameters
+	 draw_steamline = 0; 
+	 MOUSEx = 0;
+	 MOUSEy = 0;
+
+
 }
 
 //------ VISUALIZATION CODE STARTS HERE -----------------------------------------------------------------
 
 void View_visualization::set_colormap(Model_color* color, float vy, int dataset)
 {
-
 	// change scale parameters depending on dataset
 	if (dataset == 0) {
 		color->max = color->density_max;
@@ -86,11 +91,9 @@ void View_visualization::set_colormap(Model_color* color, float vy, int dataset)
 	color->rgb2hsv(R, G, B, &h, &s, &v);
 	color->hsv2rgb(h, s, v, &R, &G, &B);
 
-
 	glColor3f(R, G, B);
 
 }
-
 //direction_to_color: Set the current color by mapping the magnitude of a direction vector (x,y), using
 //the selected scalar dataset and colormap                    
 void View_visualization::direction_to_color(float scalar, int colormap, Model_color color)
@@ -123,7 +126,6 @@ void View_visualization::direction_to_color(float scalar, int colormap, Model_co
 	}
 	glColor3f(r, g, b);
 }
-
 //compute the rgb values given the current segment and the current colormap
 void View_visualization::compute_RGB(Model_color* color,float value, float* R, float* G, float* B) {
 	value = color->clamp(value);
@@ -147,61 +149,9 @@ void View_visualization::compute_RGB(Model_color* color,float value, float* R, f
 		color->interpolate(value, R, G, B, 0, 0, 1, 1, 1, 0);
 		break;
 	}
-
-
 }
-
-
-//draw a colorbar with the currently selected colormap
-/*void View_visualization::draw_colorbar(Model_color* color) {
-
-	//the amount of 'strips'
-	//int segments = 3;
-	float R, G, B, value;
-	//each 'strip' has the same height and width
-	//float segment_height = winHeight / segments;
-	float colorbar_height = winHeight / 10;
-
-	glBegin(GL_QUAD_STRIP);
-
-		// draw colorbar by using three sets of two vertices
-		value = 0;
-		compute_RGB(&*color, value, &R, &G, &B);
-		float h, s, v;
-		color->rgb2hsv(R, G, B, &h, &s, &v);
-		color->hsv2rgb(h, s, v, &R, &G, &B);
-		glColor3f(R, G, B);
-		glVertex3f(0, 0, 0);
-		glVertex3f(0, colorbar_height, 0);
-
-		value = 0.5;
-		compute_RGB(&*color, value, &R, &G, &B);
-		color->rgb2hsv(R, G, B, &h, &s, &v);
-		color->hsv2rgb(h, s, v, &R, &G, &B);
-		glColor3f(R, G, B);
-		glVertex3f(winWidth / 2 - winWidth / 8, 0, 0);
-		glVertex3f(winWidth / 2 - winWidth / 8, colorbar_height, 0);
-
-		value = 1.0;
-		compute_RGB(&*color, value, &R, &G, &B);
-		color->rgb2hsv(R, G, B, &h, &s, &v);
-		color->hsv2rgb(h, s, v, &R, &G, &B);
-		glColor3f(R, G, B);
-
-		glVertex3f(winWidth - (winWidth / 5), 0, 0);
-		glVertex3f(winWidth - (winWidth / 5), colorbar_height, 0);
-	glEnd();
-
-	draw_number(&*color, std::to_string(color->min), 5);
-	draw_number(&*color, std::to_string((color->max + color->min) / 2), winWidth /2  - winWidth / 8);
-	draw_number(&*color, std::to_string(color->max), winWidth - (winWidth / 5) - 20);
-
-}
-*/
-
 void View_visualization::draw_colorbar(Model_color* color) {
-
-	// we use NCOLORS amount of rectangles in the colorbar
+    // we use NCOLORS amount of rectangles in the colorbar
 	float R, G, B, H, S, V;
 	//each piece has the same height and width
 	float colorbar_width = winWidth - (winWidth / 5);
@@ -228,23 +178,15 @@ void View_visualization::draw_colorbar(Model_color* color) {
 	draw_number(&*color, std::to_string(color->min), 5);
 	draw_number(&*color, std::to_string((color->max + color->min) / 2), winWidth / 2 - winWidth / 8);
 	draw_number(&*color, std::to_string(color->max), winWidth - (winWidth / 5) - 20);
-
 }
-
 void View_visualization::draw_number(Model_color* color, std::string value, float position) {
 	glColor3f(1, 1, 1);
 	for (int i = 0; i < 3; i++) {
 		glRasterPos2f(position + (5*i), winHeight / 10);
 		//glRasterPos2f(i*5, position);
-		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, value[i]);
-		
-	}
-	
-	
-	
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, value[i]);	
+	}	
 }
-
-
 void View_visualization::set_Glyph_type() {
 	//glyphs parameters
 	//glyph_line = 0;
@@ -280,12 +222,20 @@ void View_visualization::set_Glyph_type() {
 		glBegin(GL_LINES);
 		break;
 	}
+}
+void View_visualization::drawCircle(GLfloat cx, GLfloat cy, GLfloat radius) {
+	float i = 0.0f;
+
+	glBegin(GL_TRIANGLE_FAN);
+
+	glVertex2f(cx, cy); // Center
+	for (i = 0.0f; i <= 360; i++)
+		glVertex2f(radius*cos(M_PI * i / 180.0) + cx, radius*sin(M_PI * i / 180.0) + cy);
+
+	glEnd();
 
 }
-
-
-
-void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* color, int* DENSITY, int* VELOCITY, int* FORCE, int* dataset,
+void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* color,int* DENSITY, int* VELOCITY, int* FORCE, int* dataset,
 	int* SCALAR_DENSITY, int* SCALAR_VELOCITY, int* SCALAR_FORCE, int* dataset_scalar,
 	int* VECTOR_VELOCITY, int* VECTOR_FORCE,int* dataset_vector)
 {
@@ -308,29 +258,24 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 				py0 = hn + (fftw_real)j * hn;
 				idx0 = (j * DIM) + i;
 
-
 				px1 = wn + (fftw_real)i * wn;
 				py1 = hn + (fftw_real)(j + 1) * hn;
 				idx1 = ((j + 1) * DIM) + i;
-
 
 				px2 = wn + (fftw_real)(i + 1) * wn;
 				py2 = hn + (fftw_real)(j + 1) * hn;
 				idx2 = ((j + 1) * DIM) + (i + 1);
 
-
 				px3 = wn + (fftw_real)(i + 1) * wn;
 				py3 = hn + (fftw_real)j * hn;
 				idx3 = (j * DIM) + (i + 1);
-
-				// draw smoke density
+     			// draw smoke density
 				if (*dataset == *DENSITY) {
 					// scalar values are simply the rho/density values
 					value0 = model_fft->rho[idx0];
 					value1 = model_fft->rho[idx1];
 					value2 = model_fft->rho[idx2];
 					value3 = model_fft->rho[idx3];
-
 				}
 				// draw smoke velocity
 				else if (*dataset == *VELOCITY) {
@@ -345,9 +290,7 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 					value1 *= 10;
 					value2 *= 10;
 					value3 *= 10;
-
 				}
-
 				// draw smoke force field
 				else if (*dataset == *FORCE) {
 					value0 = sqrt((model_fft->fx[idx0] * model_fft->fx[idx0]) + (model_fft->fy[idx0] * model_fft->fy[idx0]));
@@ -360,8 +303,6 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 					value1 *= 20;
 					value2 *= 20;
 					value3 *= 20;
-
-
 				}
 
 				set_colormap(&*color, value0, *dataset);    glVertex2f(px0, py0);
@@ -382,9 +323,7 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_COLOR_MATERIAL);*/
 	//gluLookAt(0, 0, 2, 0, 0, 0, 0, 1, 0);
-	
 
-	
 	//draw vector field by using glyphs
 	
 	float x, y, scalar, magnitude;
@@ -451,21 +390,22 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 				glutSolidCone(radius, radius*2, 3,3);			//2.8.  Draw the cone
 				direction_to_color(scalar, scalar_col, *color);
 				//glTranslatef(-(wn + (fftw_real)i * wn), -(hn + (fftw_real)j * hn),0);
-				glPopMatrix(); 
-				
-				
-				
+				glPopMatrix(); 	
 			}
-
-		glEnd();
-		
-		//draw color bar
+		glEnd();	
 	}
-	
+
 	glDisable(GL_LIGHTING);
-	draw_colorbar(&*color);
+	//draw color bar
+	draw_colorbar(&*color);;
+	if (draw_steamline == 1) {
+		drawCircle(MOUSEx, MOUSEy, 5);
+	}
 
 
+}
+
+void View_visualization::display_Steamline(Model_fftw* model_fft) {
 
 
 }

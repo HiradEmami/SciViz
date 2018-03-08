@@ -19,7 +19,9 @@ public:
 	void set_colormap(Model_color* color, float vy, int dataset);
 	void set_Glyph_type();
 	void draw2Dglyph();
-	void visualize(int DIM, Model_fftw* model_fft, Model_color* color, int* DENSITY, int* VELOCITY, int* FORCE, int* dataset,
+	void drawCircle(GLfloat cx, GLfloat cy, GLfloat radius);
+	void display_Steamline(Model_fftw* model_fft);
+	void visualize(int DIM, Model_fftw* model_fft, Model_color* color,int* DENSITY, int* VELOCITY, int* FORCE, int* dataset,
 		int* SCALAR_DENSITY, int* SCALAR_VELOCITY, int* SCALAR_FORCE, int* dataset_scalar,
 		int* VECTOR_VELOCITY, int* VECTOR_FORCE, int* dataset_vector);
 	//parameters
@@ -44,8 +46,8 @@ public:
 	int glyph_type;
 	int glyph_samplingrateX;
 	int glyph_samplingrateY;
-
-
-
+	//Steamline parameters
+	GLfloat MOUSEx, MOUSEy;
+	int draw_steamline;
 };
 
