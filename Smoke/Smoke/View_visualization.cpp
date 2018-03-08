@@ -153,7 +153,7 @@ void View_visualization::compute_RGB(Model_color* color,float value, float* R, f
 
 
 //draw a colorbar with the currently selected colormap
-void View_visualization::draw_colorbar(Model_color* color) {
+/*void View_visualization::draw_colorbar(Model_color* color) {
 
 	//the amount of 'strips'
 	//int segments = 3;
@@ -196,10 +196,40 @@ void View_visualization::draw_colorbar(Model_color* color) {
 	draw_number(&*color, std::to_string((color->max + color->min) / 2), winWidth /2  - winWidth / 8);
 	draw_number(&*color, std::to_string(color->max), winWidth - (winWidth / 5) - 20);
 
+}
+*/
+
+void View_visualization::draw_colorbar(Model_color* color) {
+
+	// we use NCOLORS amount of rectangles in the colorbar
+	float R, G, B, H, S, V;
+	//each piece has the same height and width
+	float colorbar_width = winWidth - (winWidth / 5);
+	float segment_width = colorbar_width / (color->NCOLORS + 1);
+	float segment_value = 0;
+	float colorbar_height = winHeight / 10;
+
+	glBegin(GL_QUAD_STRIP);
+	for (int i = 0; i <= color->NCOLORS; i++) {
+		segment_value = (float)i / color->NCOLORS;
+		compute_RGB(&*color, segment_value, &R, &G, &B);
+		color->rgb2hsv(R, G, B, &H, &S, &V);
+		color->hsv2rgb(H, S, V, &R, &G, &B);
+		glColor3f(R, G, B);
+		glVertex2f((i * segment_width), 0);
+		glVertex2f((i * segment_width), colorbar_height);
+
+		glVertex2f((i * segment_width) + segment_width, 0);
+		glVertex2f((i * segment_width) + segment_width, colorbar_height);
+
+	}
+	glEnd();
+	
+	draw_number(&*color, std::to_string(color->min), 5);
+	draw_number(&*color, std::to_string((color->max + color->min) / 2), winWidth / 2 - winWidth / 8);
+	draw_number(&*color, std::to_string(color->max), winWidth - (winWidth / 5) - 20);
 
 }
-
-
 
 void View_visualization::draw_number(Model_color* color, std::string value, float position) {
 	glColor3f(1, 1, 1);
@@ -350,17 +380,10 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 	glEnable(GL_LIGHT0);
 	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_COLOR_MATERIAL);
-	glMatrixMode(GL_MODELVIEW);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+	glEnable(GL_COLOR_MATERIAL);*/
+	//gluLookAt(0, 0, 2, 0, 0, 0, 0, 1, 0);
+	
 
-	glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-	glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);*/
 	
 	//draw vector field by using glyphs
 	
@@ -398,7 +421,7 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 				// compute magnitude of chosen vector dataset
 				magnitude = sqrt((x * x) + (y * y));
 				magnitude *= 10;
-				direction_to_color(scalar, scalar_col, *color);
+				
 				// use x and y to draw corresponding direction of vector
 				//glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
 				//glVertex2f((wn + (fftw_real)i * wn) + (vec_scale + (magnitude * vec_scale)) * x, (hn + (fftw_real)j * hn) + (vec_scale + (magnitude * vec_scale)) * y);
@@ -416,15 +439,17 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 
 				float a;
 				
-				
+
 				glPushMatrix();									//2.7.  Translate and rotate the canonical cone so as to be centered at the
 				glTranslatef(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn, 0);						//      current vertex, and aligned with the current vector
 				a = atan2(model_fft->vy[idx], model_fft->vx[idx]);
 				angle = 180 * a / M_PI;
 				glRotatef(90-angle, 0.0, 0.0, -1.0);
-				glRotatef(-90.0, 1.0, 0.0, 0.0);
+				glRotatef(-90.0, 1.0, 1.0, 0.0);
+			
+				//glRotatef(-70.0, 0.0, 1.0, 0.0);
 				glutSolidCone(radius, radius*2, 3,3);			//2.8.  Draw the cone
-				//glutSolidCone(radius, radius * 2, 20, 1);
+				direction_to_color(scalar, scalar_col, *color);
 				//glTranslatef(-(wn + (fftw_real)i * wn), -(hn + (fftw_real)j * hn),0);
 				glPopMatrix(); 
 				
@@ -437,7 +462,7 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 		//draw color bar
 	}
 	
-	//glDisable(GL_LIGHTING);
+	glDisable(GL_LIGHTING);
 	draw_colorbar(&*color);
 
 

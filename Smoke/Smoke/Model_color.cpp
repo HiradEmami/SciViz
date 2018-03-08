@@ -109,18 +109,24 @@ void Model_color::heatmap(float value, float* R, float* G, float* B)
 		interpolate(value * 2, R, G, B, r1, g1, b1, r2, g2, b2);
 	}
 	else {
-		//white
+		//yellow
 		r1 = g1 = 1;
 		b1 = 0.1*value;
-		//interpolate between orange and white
+		//interpolate between orange and yellow
 		interpolate((value - 0.5) * 2, R, G, B, r2, g2, b2, r1, g1, b1);
 	}
 
 
-	
-	
-
 }
+
+
+
+
+
+
+
+
+
 
 void Model_color::blackwhite(float value, float* R, float* G, float* B)
 {
