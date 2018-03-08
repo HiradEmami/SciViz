@@ -63,151 +63,9 @@ void do_one_simulation_step(void)
 }
 
 void visualize(void)
-{
-	/*
-	int        i, j, idx;
-	fftw_real  wn = (fftw_real)view.winWidth / (fftw_real)(DIM + 1);   // Grid cell width
-	fftw_real  hn = (fftw_real)view.winHeight / (fftw_real)(DIM + 1);  // Grid cell height
-	float value0, value1, value2, value3;
-
-	if (view.draw_smoke)
-	{
-		int idx0, idx1, idx2, idx3;
-		double px0, py0, px1, py1, px2, py2, px3, py3;
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glBegin(GL_TRIANGLES);
-		for (j = 0; j < DIM - 1; j++)            //draw smoke
-		{
-			for (i = 0; i < DIM - 1; i++)
-			{
-				px0 = wn + (fftw_real)i * wn;
-				py0 = hn + (fftw_real)j * hn;
-				idx0 = (j * DIM) + i;
-
-
-				px1 = wn + (fftw_real)i * wn;
-				py1 = hn + (fftw_real)(j + 1) * hn;
-				idx1 = ((j + 1) * DIM) + i;
-
-
-				px2 = wn + (fftw_real)(i + 1) * wn;
-				py2 = hn + (fftw_real)(j + 1) * hn;
-				idx2 = ((j + 1) * DIM) + (i + 1);
-
-
-				px3 = wn + (fftw_real)(i + 1) * wn;
-				py3 = hn + (fftw_real)j * hn;
-				idx3 = (j * DIM) + (i + 1);
-
-				// draw smoke density
-				if (dataset == DENSITY) {
-					// scalar values are simply the rho/density values
-					value0 = model_fft.rho[idx0];
-					value1 = model_fft.rho[idx1];
-					value2 = model_fft.rho[idx2];
-					value3 = model_fft.rho[idx3];
-					
-				}
-				// draw smoke velocity
-				else if (dataset == VELOCITY) {
-					// scalar values are the magnitudes of the vectors
-					value0 = sqrt((model_fft.vx[idx0] * model_fft.vx[idx0]) + (model_fft.vy[idx0] * model_fft.vy[idx0]));
-					value1 = sqrt((model_fft.vx[idx1] * model_fft.vx[idx1]) + (model_fft.vy[idx1] * model_fft.vy[idx1]));
-					value2 = sqrt((model_fft.vx[idx2] * model_fft.vx[idx2]) + (model_fft.vy[idx2] * model_fft.vy[idx2]));
-					value3 = sqrt((model_fft.vx[idx3] * model_fft.vx[idx3]) + (model_fft.vy[idx3] * model_fft.vy[idx3]));
-
-					// increase velocity scalar to make it more visible
-					value0 *= 20;
-					value1 *= 20;
-					value2 *= 20;
-					value3 *= 20;
-					
-				}
-
-				// draw smoke force field
-				else if (dataset == FORCE) {
-					value0 = sqrt((model_fft.fx[idx0] * model_fft.fx[idx0]) + (model_fft.fy[idx0] * model_fft.fy[idx0]));
-					value1 = sqrt((model_fft.fx[idx1] * model_fft.fx[idx1]) + (model_fft.fy[idx1] * model_fft.fy[idx1]));
-					value2 = sqrt((model_fft.fx[idx2] * model_fft.fx[idx2]) + (model_fft.fy[idx2] * model_fft.fy[idx2]));
-					value3 = sqrt((model_fft.fx[idx3] * model_fft.fx[idx3]) + (model_fft.fy[idx3] * model_fft.fy[idx3]));
-
-					// increase force scalar to make it more visible
-					value0 *= 20;
-					value1 *= 20;
-					value2 *= 20;
-					value3 *= 20;
-				
-
-				}
-
-				view.set_colormap(&color, value0, dataset);    glVertex2f(px0, py0);
-				view.set_colormap(&color, value1, dataset);    glVertex2f(px1, py1);
-				view.set_colormap(&color, value2, dataset);    glVertex2f(px2, py2);
-
-				view.set_colormap(&color, value0, dataset);    glVertex2f(px0, py0);
-				view.set_colormap(&color, value2, dataset);    glVertex2f(px2, py2);
-				view.set_colormap(&color, value3, dataset);    glVertex2f(px3, py3);
-			}
-		}
-		glEnd();
-	}
-	
-	//draw vector field by using glyphs
-	float x, y, scalar, magnitude;
-	if (view.draw_vecs)
-	{
-		glBegin(GL_LINES);				
-		for (i = 0; i < DIM; i++)
-			for (j = 0; j < DIM; j++)
-			{
-				idx = (j * DIM) + i;
-				// choose scalar for coloring 
-				if (dataset_scalar == SCALAR_DENSITY) {
-					scalar = model_fft.rho[idx];
-				}
-				else if (dataset_scalar == SCALAR_VELOCITY) {
-					scalar = (model_fft.vx[idx] * model_fft.vx[idx]) + (model_fft.vy[idx] * model_fft.vy[idx]);
-					scalar *= 100;
-				}
-				else if (dataset_scalar == SCALAR_FORCE) {
-					scalar = (model_fft.fx[idx] * model_fft.fx[idx]) + (model_fft.fy[idx] * model_fft.fy[idx]);
-					scalar *= 100;
-				}
-				//X and Y values depend on chosen dataset vector
-				if (dataset_vector == VECTOR_VELOCITY) {
-					x = model_fft.vx[idx];
-					y = model_fft.vy[idx];
-				}
-				else if (dataset_vector == VECTOR_FORCE) {
-					x = model_fft.fx[idx];
-					y = model_fft.fy[idx];
-				}
-				// compute magnitude of chosen vector dataset
-				magnitude = sqrt((x * x) + (y * y));
-				magnitude *= 10;
-				view.direction_to_color(x, y, scalar, view.scalar_col, color);
-				// use x and y to draw corresponding direction of vector
-				glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
-				glVertex2f((wn + (fftw_real)i * wn) + (view.vec_scale + (magnitude * view.vec_scale)) * x, (hn + (fftw_real)j * hn) + (view.vec_scale + (magnitude * view.vec_scale)) * y);
-				//glVertex2f((wn + (fftw_real)i * wn) + view.vec_scale  * x, (hn + (fftw_real)j * hn) + view.vec_scale * y);
-			}	
-		glEnd();
-	}
-
-
-	//draw color bar
-	view.draw_colorbar(&color);
-	//view.draw_number(&color, color.max,50);
-
-
-
-	
-	
-	*/
-	view.visualize( DIM, &model_fft, &color, &DENSITY, &VELOCITY, &FORCE, &dataset,
+{		view.visualize( DIM, &model_fft, &color, &DENSITY, &VELOCITY, &FORCE, &dataset,
 		&SCALAR_DENSITY, &SCALAR_VELOCITY, &SCALAR_FORCE, &dataset_scalar,
 		&VECTOR_VELOCITY, &VECTOR_FORCE, &dataset_vector);
-
 }
 
 void display()
@@ -230,6 +88,10 @@ void keyboardFunction(unsigned char key, int x, int y) {
 }
 void drag(int mx, int my) {
 	interaction.drag(&view,&model_fft, DIM, &mx, &my);
+}
+
+void getPosition(int btn, int state, int x, int y) {
+	interaction.mouse(&btn, &state,&x, &y);
 }
 
 // Get the horizontal and vertical screen sizes in pixel
@@ -273,7 +135,8 @@ int main(int argc, char **argv)
 	//glutIdleFunc(do_one_simulation_step);
 	GLUI_Master.set_glutIdleFunc(do_one_simulation_step);
 	glutKeyboardFunc(keyboardFunction);
-	glutMotionFunc(drag); 
+	glutMotionFunc(drag);
+	glutMouseFunc(getPosition);
 
 	
 

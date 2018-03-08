@@ -6,6 +6,8 @@
 
 controller_viewInteraction::controller_viewInteraction()
 {
+	MOUSEx = 0; 
+	MOUSEy = 0;
 }
 
 
@@ -45,4 +47,35 @@ void controller_viewInteraction::reshape(View_visualization* view,int* w, int* h
 	gluOrtho2D(0.0, (GLdouble)*w, 0.0, (GLdouble)*h);
 	view->winWidth = *w; view->winHeight = *h;
 
+}
+
+
+
+void controller_viewInteraction::setX(int x)
+{
+	MOUSEx = x;
+}
+
+void controller_viewInteraction::setY(int y)
+{
+	MOUSEy = y;
+}
+void controller_viewInteraction::mouse(int* btn, int* state, int* x, int* y)
+{
+	if (*btn == GLUT_LEFT_BUTTON && *state == GLUT_DOWN)
+	{
+		setX(*x);
+		setY(*y);
+		//drawSquare(MOUSEx,HEIGHT-MOUSEy);
+		glutPostRedisplay();
+
+		printf("The Coordinate of the selected locations:\n");
+		printf("==========================================\n");
+		printf("X = %d\nY= %d\n", *x, *y);
+		printf("==========================================\n");
+	}
+	if (*btn == GLUT_RIGHT_BUTTON && *state == GLUT_DOWN)
+	{
+		exit(1);   // To Exit the Program
+	}
 }
