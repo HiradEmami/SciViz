@@ -55,20 +55,16 @@ void controller_viewInteraction::mouse(int* btn, int* state, int* x, int* y, Vie
 	if (*btn == GLUT_LEFT_BUTTON && *state == GLUT_DOWN)
 	{
 		view->draw_steamline = 1;
-		setX(*x,&*view);
-		setY(*y,&*view);
+		setX(*y,&*view);
+		setY(*x,&*view);
 		//drawSquare(MOUSEx,HEIGHT-MOUSEy);
 		glutPostRedisplay();
 
 		printf("The Coordinate of the selected locations:\n");
 		printf("==========================================\n");
 		printf("X = %d\nY= %d\n", *x, *y);
-		printf("\n%f, %f", view->MOUSEx, view->MOUSEy);
 		printf("==========================================\n");
 
-		float x2 = (float)*x;
-		float y2 = (float)*y;
-		GLfloat radius = 3.0;
 		
 	}
 	if (*btn == GLUT_RIGHT_BUTTON && *state == GLUT_DOWN)
