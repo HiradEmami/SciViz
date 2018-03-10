@@ -9,23 +9,12 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-
-const GLfloat light_ambient[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-const GLfloat light_diffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-const GLfloat light_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-const GLfloat light_position[] = { 2.0f, 5.0f, 5.0f, 0.0f };
-
-const GLfloat mat_ambient[] = { 0.7f, 0.7f, 0.7f, 1.0f };
-const GLfloat mat_diffuse[] = { 0.8f, 0.8f, 0.8f, 1.0f };
-const GLfloat mat_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-const GLfloat high_shininess[] = { 100.0f };
-
 View_visualization::View_visualization()
 {
 	 DIM = 3;
 	 color_dir = 0;            //use direction color-coding or not
 	 vec_scale = 1000;			//scaling of hedgehogs
-	 draw_smoke = 1;           //draw the smoke or not
+	 draw_smoke = 0;           //draw the smoke or not
 	 draw_vecs = 1;            //draw the vector field or not
 	 use_clamp = 1;
 	 colorbar_width = 50;
@@ -235,6 +224,7 @@ void View_visualization::drawCircle(GLfloat cx, GLfloat cy, GLfloat radius) {
 	glEnd();
 
 }
+
 void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* color,int* DENSITY, int* VELOCITY, int* FORCE, int* dataset,
 	int* SCALAR_DENSITY, int* SCALAR_VELOCITY, int* SCALAR_FORCE, int* dataset_scalar,
 	int* VECTOR_VELOCITY, int* VECTOR_FORCE,int* dataset_vector)
@@ -312,6 +302,8 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 				set_colormap(&*color, value0, *dataset);    glVertex2f(px0, py0);
 				set_colormap(&*color, value2, *dataset);    glVertex2f(px2, py2);
 				set_colormap(&*color, value3, *dataset);    glVertex2f(px3, py3);
+
+				
 			}
 		}
 		glEnd();
@@ -366,10 +358,10 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 				//glVertex2f((wn + (fftw_real)i * wn) + (vec_scale + (magnitude * vec_scale)) * x, (hn + (fftw_real)j * hn) + (vec_scale + (magnitude * vec_scale)) * y);
 				//glVertex2f((wn + (fftw_real)i * wn) + view.vec_scale  * x, (hn + (fftw_real)j * hn) + view.vec_scale * y);
 
-				float radius = wn/4 + magnitude*wn;
-				float max_radius = wn / 3;
+				float radius = wn/2;
+				
 
-				if (radius > max_radius) radius = max_radius;
+		
 			
 
 				float angle;
@@ -380,22 +372,23 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 				
 
 				glPushMatrix();									//2.7.  Translate and rotate the canonical cone so as to be centered at the
-				glTranslatef(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn, 0);						//      current vertex, and aligned with the current vector
+				glTranslatef(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn, 1);						//      current vertex, and aligned with the current vector
 				a = atan2(model_fft->vy[idx], model_fft->vx[idx]);
 				angle = 180 * a / M_PI;
 				glRotatef(90-angle, 0.0, 0.0, -1.0);
-				glRotatef(-90.0, 1.0, 1.0, 0.0);
+				glRotatef(-90.0, 1.0, 0.0, 0.0);
 			
 				//glRotatef(-70.0, 0.0, 1.0, 0.0);
-				glutSolidCone(radius, radius*2, 3,3);			//2.8.  Draw the cone
+				glutSolidCone(radius/2, radius, 3,3);			//2.8.  Draw the cone
 				direction_to_color(scalar, scalar_col, *color);
 				//glTranslatef(-(wn + (fftw_real)i * wn), -(hn + (fftw_real)j * hn),0);
 				glPopMatrix(); 	
+				
 			}
 		glEnd();	
 	}
 
-	glDisable(GL_LIGHTING);
+	//glDisable(GL_LIGHTING);
 	//draw color bar
 	draw_colorbar(&*color);;
 	if (draw_steamline == 1) {

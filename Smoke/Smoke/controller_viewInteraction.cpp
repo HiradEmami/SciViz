@@ -55,8 +55,8 @@ void controller_viewInteraction::mouse(int* btn, int* state, int* x, int* y, Vie
 	if (*btn == GLUT_LEFT_BUTTON && *state == GLUT_DOWN)
 	{
 		view->draw_steamline = 1;
-		setX(*y,&*view);
-		setY(*x,&*view);
+		setX(*x,&*view);
+		setY(*y,&*view);
 		//drawSquare(MOUSEx,HEIGHT-MOUSEy);
 		glutPostRedisplay();
 

@@ -63,7 +63,9 @@ void do_one_simulation_step(void)
 }
 
 void visualize(void)
-{		view.visualize( DIM, &model_fft, &color,&DENSITY, &VELOCITY, &FORCE, &dataset,
+{		
+	
+		view.visualize( DIM, &model_fft, &color,&DENSITY, &VELOCITY, &FORCE, &dataset,
 		&SCALAR_DENSITY, &SCALAR_VELOCITY, &SCALAR_FORCE, &dataset_scalar,
 		&VECTOR_VELOCITY, &VECTOR_FORCE, &dataset_vector);
 }
@@ -91,12 +93,15 @@ void drag(int mx, int my) {
 }
 
 void getPosition(int btn, int state, int x, int y) {
+	// flip the y value
+	y = view.winHeight - y;
 	interaction.mouse(&btn, &state,&x, &y,&view);
 }
 
 // Get the horizontal and vertical screen sizes in pixel
 void GetDesktopResolution(int* horizontal, int* vertical)
 {
+
 	RECT desktop;
 	// Get a handle to the desktop window
 	const HWND hDesktop = GetDesktopWindow();
