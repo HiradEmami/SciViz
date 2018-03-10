@@ -198,10 +198,19 @@ int main(int argc, char **argv)
 		GLUI_Rollout* glyph_rollout = control_window->add_rollout("Glyphs", true);
 			control_window->add_checkbox_to_panel(glyph_rollout, "Draw glyphs", &view.draw_vecs);
 			control_window->add_checkbox_to_panel(glyph_rollout, "Color glyphs", &view.color_dir);
-			GLUI_Panel* scalar_panel = control_window->add_panel_to_panel(glyph_rollout, "Scalar");
-			GLUI_Panel* vector_panel = control_window->add_panel_to_panel(glyph_rollout, "Vector");
+
+			GLUI_Panel* type_panel = control_window->add_panel_to_panel(glyph_rollout, "Glyph type");
+			GLUI_Panel* scalar_panel = control_window->add_panel_to_panel(glyph_rollout, "Scalar dataset");
+			GLUI_Panel* vector_panel = control_window->add_panel_to_panel(glyph_rollout, "Vector dataset");
+
+
+			GLUI_RadioGroup* type_buttons = control_window->add_radiogroup_to_panel(type_panel, &view.vector_type);
 			GLUI_RadioGroup* scalar_buttons = control_window->add_radiogroup_to_panel(scalar_panel, &dataset_scalar);
 			GLUI_RadioGroup* vector_buttons = control_window->add_radiogroup_to_panel(vector_panel, &dataset_vector);
+
+			control_window->add_radiobutton_to_group(type_buttons, "Standard");
+			control_window->add_radiobutton_to_group(type_buttons, "Gradient");
+
 			control_window->add_radiobutton_to_group(scalar_buttons, "Density");
 			control_window->add_radiobutton_to_group(scalar_buttons, "Velocity");
 			control_window->add_radiobutton_to_group(scalar_buttons, "Force");

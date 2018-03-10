@@ -25,16 +25,23 @@ View_visualization::View_visualization()
 	 COLOR_DIVERGING = 4;
 	 COLOR_TWOCOLORS = 5;
 	 scalar_col = 0;
-	 //default glyphs
+	 //glyph parameters
 	 glyph_type = 0;
+	 //draw normal vector glyphs or gradient glyphs
+	 vector_type = 0;
+	 STANDARD = 0;
+	 GRADIENT = 1;
 
 	 glyph_samplingrateX = 1;
 	 glyph_samplingrateY = 1;
 
-	 //steamline parameters
+	 //streamline parameters
 	 draw_steamline = 0; 
 	 MOUSEx = 0;
 	 MOUSEy = 0;
+
+
+	 
 
 
 }
@@ -225,6 +232,13 @@ void View_visualization::drawCircle(GLfloat cx, GLfloat cy, GLfloat radius) {
 
 }
 
+
+// apply the inverse coordinate transform to get the reference cell coordinates for the given point p
+void View_visualization::get_reference_coordinates(int p, int p1, int p2, int p3, int p4, int* r, int* s) {
+	*r = ((p - p1) * (p2 - p1)) / ((p2 - p1) * (p2 - p1));
+	*s = ((p - p1) * (p4 - p1)) / ((p4 - p1) * (p4 - p1));
+}
+
 void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* color,int* DENSITY, int* VELOCITY, int* FORCE, int* dataset,
 	int* SCALAR_DENSITY, int* SCALAR_VELOCITY, int* SCALAR_FORCE, int* dataset_scalar,
 	int* VECTOR_VELOCITY, int* VECTOR_FORCE,int* dataset_vector)
@@ -233,17 +247,18 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 	fftw_real  wn = (fftw_real)winWidth / (fftw_real)(DIM + 1);   // Grid cell width
 	fftw_real  hn = (fftw_real)winHeight / (fftw_real)(DIM + 1);  // Grid cell height
 	float value0, value1, value2, value3;
+	int idx0, idx1, idx2, idx3;
 
 	if (draw_smoke)
 	{
-		int idx0, idx1, idx2, idx3;
+		\
 		double px0, py0, px1, py1, px2, py2, px3, py3;
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glBegin(GL_TRIANGLES);
 		for (j = 0; j < DIM - 1; j++)            //draw smoke
 		{
 			for (i = 0; i < DIM - 1; i++)
-			{
+			{ 
 				px0 = wn + (fftw_real)i * wn;
 				py0 = hn + (fftw_real)j * hn;
 				idx0 = (j * DIM) + i;
@@ -295,6 +310,8 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 					value3 *= 20;
 				}
 
+				// Draw the smoke at all four vertices, by drawing two triangles
+
 				set_colormap(&*color, value0, *dataset);    glVertex2f(px0, py0);
 				set_colormap(&*color, value1, *dataset);    glVertex2f(px1, py1);
 				set_colormap(&*color, value2, *dataset);    glVertex2f(px2, py2);
@@ -340,50 +357,62 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 					scalar = (model_fft->fx[idx] * model_fft->fx[idx]) + (model_fft->fy[idx] * model_fft->fy[idx]);
 					scalar *= 1000;
 				}
-				//X and Y values depend on chosen dataset vector
-				if (*dataset_vector == *VECTOR_VELOCITY) {
-					x = model_fft->vx[idx];
-					y = model_fft->vy[idx];
-				}
-				else if (*dataset_vector == *VECTOR_FORCE) {
-					x = model_fft->fx[idx];
-					y = model_fft->fy[idx];
-				}
-				// compute magnitude of chosen vector dataset
-				magnitude = sqrt((x * x) + (y * y));
-				magnitude *= 10;
-				
-				// use x and y to draw corresponding direction of vector
-				//glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
-				//glVertex2f((wn + (fftw_real)i * wn) + (vec_scale + (magnitude * vec_scale)) * x, (hn + (fftw_real)j * hn) + (vec_scale + (magnitude * vec_scale)) * y);
-				//glVertex2f((wn + (fftw_real)i * wn) + view.vec_scale  * x, (hn + (fftw_real)j * hn) + view.vec_scale * y);
 
+
+				if (vector_type == STANDARD) {
+					//X and Y values depend on chosen dataset vector
+					if (*dataset_vector == *VECTOR_VELOCITY) {
+						x = model_fft->vx[idx];
+						y = model_fft->vy[idx];
+					}
+					else if (*dataset_vector == *VECTOR_FORCE) {
+						x = model_fft->fx[idx];
+						y = model_fft->fy[idx];
+					}
+					// compute magnitude of chosen vector dataset
+					magnitude = sqrt((x * x) + (y * y));
+					magnitude *= 10;
+
+					// use x and y to draw corresponding direction of vector
+					//glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
+					//glVertex2f((wn + (fftw_real)i * wn) + (vec_scale + (magnitude * vec_scale)) * x, (hn + (fftw_real)j * hn) + (vec_scale + (magnitude * vec_scale)) * y);
+					//glVertex2f((wn + (fftw_real)i * wn) + view.vec_scale  * x, (hn + (fftw_real)j * hn) + view.vec_scale * y);
+				}
+
+				// draw the gradient of either density or velocity magnitude
+				else if (vector_type == GRADIENT) {
+				
+					idx0 = (j * DIM) + i;
+					idx1 = ((j + 1) * DIM) + i;
+					idx2 = ((j + 1) * DIM) + (i + 1);
+					idx3 = (j * DIM) + (i + 1);
+					
+					// compute derivative of vertical sides of cell
+					x = (0.5*(model_fft->rho[idx1] - model_fft->rho[idx0]) / wn) + (0.5*(model_fft->rho[idx2] - model_fft->rho[idx3]) / wn);
+					y = (0.5*(model_fft->rho[idx3] - model_fft->rho[idx0]) / wn) + (0.5*(model_fft->rho[idx2] - model_fft->rho[idx1]) / hn);
+
+					
+
+				}
+
+				// Scale size of glyph to the cell width
 				float radius = wn/2;
-				
-
-		
-			
-
-				float angle;
-				float cosa = model_fft->vx[idx];
-				float sina = model_fft->vy[idx];
-
-				float a;
-				
-
-				glPushMatrix();									//2.7.  Translate and rotate the canonical cone so as to be centered at the
-				glTranslatef(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn, 1);						//      current vertex, and aligned with the current vector
-				a = atan2(model_fft->vy[idx], model_fft->vx[idx]);
-				angle = 180 * a / M_PI;
+				float angle;			
+				// Draw glyph by using the magnitude of the vector and its orientation
+				glPushMatrix();			
+				// Translate glyph to current cell
+				glTranslatef(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn, 1);
+				// Compute arctangent of vector y and x values
+				angle = atan2(y, x);
+				angle = 180 * angle / M_PI;
+				// Rotate glyph according to computed vector orientation
 				glRotatef(90-angle, 0.0, 0.0, -1.0);
 				glRotatef(-90.0, 1.0, 0.0, 0.0);
-			
-				//glRotatef(-70.0, 0.0, 1.0, 0.0);
-				glutSolidCone(radius/2, radius, 3,3);			//2.8.  Draw the cone
+				// Draw the solid cones with specified radius
+				glutSolidCone(radius/2, radius, 3,3);			
+				// Color the glpyhs
 				direction_to_color(scalar, scalar_col, *color);
-				//glTranslatef(-(wn + (fftw_real)i * wn), -(hn + (fftw_real)j * hn),0);
-				glPopMatrix(); 	
-				
+				glPopMatrix(); 					
 			}
 		glEnd();	
 	}
@@ -391,9 +420,9 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 	//glDisable(GL_LIGHTING);
 	//draw color bar
 	draw_colorbar(&*color);;
-	if (draw_steamline == 1) {
+	/*if (draw_steamline == 1) {
 		drawCircle(MOUSEx, MOUSEy, 5);
-	}
+	}*/
 
 
 }
