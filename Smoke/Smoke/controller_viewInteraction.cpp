@@ -41,14 +41,16 @@ void controller_viewInteraction::reshape(View_visualization* view,int* w, int* h
 	view->winWidth = *w; view->winHeight = *h;
 
 }
-void controller_viewInteraction::setX(int x, View_visualization* view)
+void controller_viewInteraction::setX(int xi,int x, View_visualization* view)
 {
 	view->MOUSEx = x;
+	view->GRIDx = xi;
 }
-void controller_viewInteraction::setY(int y, View_visualization* view)
+void controller_viewInteraction::setY(int yi,int y, View_visualization* view)
 {
 		//parameters
 	 view->MOUSEy = y;
+	 view->GRIDy = yi;
 }
 //This function 
 void controller_viewInteraction::mouse(int* btn, int* state, int* x, int* y, View_visualization* view, Model_fftw* model_fft, int DIM)
@@ -56,8 +58,8 @@ void controller_viewInteraction::mouse(int* btn, int* state, int* x, int* y, Vie
 	if (*btn == GLUT_LEFT_BUTTON && *state == GLUT_DOWN)
 	{
 		view->draw_steamline = 1; //
-		setX(*x,&*view);
-		setY(*y,&*view);
+		
+
 		//get cell
 		int xi, yi, X, Y; double  dx, dy, len;
 		static int lmx = 0, lmy = 0;				//remembers last mouse location
@@ -65,6 +67,10 @@ void controller_viewInteraction::mouse(int* btn, int* state, int* x, int* y, Vie
 													// Compute the array index that corresponds to the cursor location 
 		xi = (int)model_fft->clamp((double)(DIM + 1) * ((double)*x / (double)view->winWidth));
 		yi = (int)model_fft->clamp((double)(DIM + 1) * ((double)(view->winHeight - *y) / (double)view->winHeight));
+
+		setX(xi,*x, &*view);
+		setY(yi,*y, &*view);
+		
 
 		//drawSquare(MOUSEx,HEIGHT-MOUSEy);
 		glutPostRedisplay();

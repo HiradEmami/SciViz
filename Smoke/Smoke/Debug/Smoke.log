@@ -1,11 +1,19 @@
 ﻿  fluids.cpp
+  controller_viewInteraction.cpp
+c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\controller_viewinteraction.cpp(64): warning C4101: 'len': unreferenced local variable
+c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\controller_viewinteraction.cpp(64): warning C4101: 'dy': unreferenced local variable
+c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\controller_viewinteraction.cpp(64): warning C4101: 'Y': unreferenced local variable
+c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\controller_viewinteraction.cpp(64): warning C4101: 'dx': unreferenced local variable
+c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\controller_viewinteraction.cpp(64): warning C4101: 'X': unreferenced local variable
   View_visualization.cpp
-c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\view_visualization.cpp(97): warning C4101: 'f': unreferenced local variable
-c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\view_visualization.cpp(270): warning C4101: 'left_x': unreferenced local variable
-c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\view_visualization.cpp(270): warning C4101: 'right_y': unreferenced local variable
-c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\view_visualization.cpp(270): warning C4101: 'right_x': unreferenced local variable
-c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\view_visualization.cpp(261): warning C4101: 'angle': unreferenced local variable
-c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\view_visualization.cpp(270): warning C4101: 'left_y': unreferenced local variable
+c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\view_visualization.cpp(99): warning C4101: 'f': unreferenced local variable
+c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\view_visualization.cpp(272): warning C4101: 'left_x': unreferenced local variable
+c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\view_visualization.cpp(272): warning C4101: 'right_y': unreferenced local variable
+c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\view_visualization.cpp(272): warning C4101: 'right_x': unreferenced local variable
+c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\view_visualization.cpp(263): warning C4101: 'angle': unreferenced local variable
+c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\view_visualization.cpp(272): warning C4101: 'left_y': unreferenced local variable
   Generating Code...
+  Skipping... (no relevant changes detected)
+  Controller_keyboard.cpp
 Controller_keyboard.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/SAFESEH' specification
   Smoke.vcxproj -> C:\Users\Hirad Gorgoroth\Documents\GitHub\SciViz\Smoke\Debug\Smoke.exe
