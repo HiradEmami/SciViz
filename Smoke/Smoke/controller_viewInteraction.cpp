@@ -17,6 +17,7 @@ void controller_viewInteraction::drag(View_visualization* view,Model_fftw* model
 	xi = (int)model_fft->clamp((double)(DIM + 1) * ((double)*mx / (double)view->winWidth));
 	yi = (int)model_fft->clamp((double)(DIM + 1) * ((double)(view->winHeight - *my) / (double)view->winHeight));
 
+
 	X = xi; Y = yi;
 
 	if (X > (DIM - 1))  X = DIM - 1; if (Y > (DIM - 1))  Y = DIM - 1;
@@ -57,7 +58,7 @@ void controller_viewInteraction::mouse(int* btn, int* state, int* x, int* y, Vie
 {
 	if (*btn == GLUT_LEFT_BUTTON && *state == GLUT_DOWN)
 	{
-		view->draw_steamline = 1; //
+		//view->draw_streamline = 1; //
 		
 
 		//get cell
@@ -71,6 +72,7 @@ void controller_viewInteraction::mouse(int* btn, int* state, int* x, int* y, Vie
 		setX(xi,*x, &*view);
 		setY(yi,*y, &*view);
 		
+		printf("%d %d\n", view->GRIDx, view->GRIDy);
 
 		//drawSquare(MOUSEx,HEIGHT-MOUSEy);
 		glutPostRedisplay();

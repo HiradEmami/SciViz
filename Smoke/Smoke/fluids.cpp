@@ -148,7 +148,8 @@ int main(int argc, char **argv)
 	
 	
 	// define the control window and all of its functions
-	control_window = GLUI_Master.create_glui("Control",GLUI_SUBWINDOW_RIGHT);
+	control_window = GLUI_Master.create_glui_subwindow(main_window, GLUI_SUBWINDOW_RIGHT);
+	//control_window = GLUI_Master.create_glui("Control",GLUI_SUBWINDOW_RIGHT);
 
 
 

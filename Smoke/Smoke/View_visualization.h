@@ -25,10 +25,14 @@ public:
 	void draw_arrows(float x, float y, fftw_real  wn, fftw_real hn, int i, int j, float magnitude);
 	void rotate(float x, float y, float* newx, float* newy, float pivotx, float pivoty, float angle);
 	void drawCircle(GLfloat cx, GLfloat cy, GLfloat radius);
-	void display_Steamline(Model_fftw* model_fft);
+
 	void visualize(int DIM, Model_fftw* model_fft, Model_color* color,int* DENSITY, int* VELOCITY, int* FORCE, int* dataset,
 		int* SCALAR_DENSITY, int* SCALAR_VELOCITY, int* SCALAR_FORCE, int* dataset_scalar,
 		int* VECTOR_VELOCITY, int* VECTOR_FORCE, int* dataset_vector);
+	void compute_velocity(double px, double py, double* p_velX, double* p_velY, Model_fftw* model_fft);
+	void bilinear_interpolation(int idx0, int idx1, int idx2, int idx3, double px0, double py0,
+		double px1, double py1, double px2, double py2, double px3, double py3, double px, double py, double *p_velX,
+		double *p_velY, Model_fftw* model_fft);
 	//parameters
 	int DIM;				//size of simulation grid
 	int   winWidth, winHeight;  //size of the graphics window, in pixels
@@ -59,6 +63,9 @@ public:
 	//Steamline parameters
 	GLfloat MOUSEx, MOUSEy;
 	int GRIDx, GRIDy;
-	int draw_steamline;
+	int draw_streamline;
+
+	fftw_real wn;
+	fftw_real hn;
 };
 
