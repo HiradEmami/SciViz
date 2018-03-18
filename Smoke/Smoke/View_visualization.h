@@ -12,14 +12,18 @@ class View_visualization
 public:
 	View_visualization();
 
-	void draw_number(Model_color* color, std::string value, float position);
+	void draw_number(Model_color* color, std::string value, float position, float height);
 	void draw_colorbar(Model_color* color);
 	void compute_RGB(Model_color* color,float value, float* R, float* G, float* B);
 	void direction_to_color(float scalar, int colormap, Model_color color);
 	void set_colormap(Model_color* color, float vy, int dataset);
 	void set_Glyph_type();
 	void draw2Dglyph();
-	void get_reference_coordinates(int p, int p1, int p2, int p3, int p4, int* r, int* s);
+	void get_reference_coordinates(double px, double py, double v1x, double v1y, double v2x, double v2y,
+		double v4x, double v4y, double* r, double* s);
+	void draw_cones(float x, float y, fftw_real  wn, fftw_real hn, int i, int j, float magnitude);
+	void draw_arrows(float x, float y, fftw_real  wn, fftw_real hn, int i, int j, float magnitude);
+	void rotate(float x, float y, float* newx, float* newy, float pivotx, float pivoty, float angle);
 	void drawCircle(GLfloat cx, GLfloat cy, GLfloat radius);
 	void display_Steamline(Model_fftw* model_fft);
 	void visualize(int DIM, Model_fftw* model_fft, Model_color* color,int* DENSITY, int* VELOCITY, int* FORCE, int* dataset,
@@ -45,6 +49,8 @@ public:
 	int use_clamp;
 	//glyph parameters
 	int glyph_type;
+	int CONES;
+	int ARROWS;
 	int glyph_samplingrateX;
 	int glyph_samplingrateY;
 	int vector_type;

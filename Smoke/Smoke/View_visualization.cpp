@@ -27,6 +27,9 @@ View_visualization::View_visualization()
 	 scalar_col = 0;
 	 //glyph parameters
 	 glyph_type = 0;
+	 CONES = 0;
+	 ARROWS = 1;
+
 	 //draw normal vector glyphs or gradient glyphs
 	 vector_type = 0;
 	 STANDARD = 0;
@@ -153,7 +156,7 @@ void View_visualization::draw_colorbar(Model_color* color) {
 	float colorbar_width = winWidth - (winWidth / 5);
 	float segment_width = colorbar_width / (color->NCOLORS + 1);
 	float segment_value = 0;
-	float colorbar_height = winHeight / 10;
+	float colorbar_height = winHeight / 20;
 
 	glBegin(GL_QUAD_STRIP);
 	for (int i = 0; i <= color->NCOLORS; i++) {
@@ -171,14 +174,14 @@ void View_visualization::draw_colorbar(Model_color* color) {
 	}
 	glEnd();
 	
-	draw_number(&*color, std::to_string(color->min), 5);
-	draw_number(&*color, std::to_string((color->max + color->min) / 2), winWidth / 2 - winWidth / 8);
-	draw_number(&*color, std::to_string(color->max), winWidth - (winWidth / 5) - 20);
+	draw_number(&*color, std::to_string(color->min), 5, colorbar_height + 5);
+	draw_number(&*color, std::to_string((color->max + color->min) / 2), winWidth / 2 - winWidth / 8, colorbar_height + 5);
+	draw_number(&*color, std::to_string(color->max), winWidth - (winWidth / 5) - 20, colorbar_height + 5);
 }
-void View_visualization::draw_number(Model_color* color, std::string value, float position) {
+void View_visualization::draw_number(Model_color* color, std::string value, float position, float height) {
 	glColor3f(1, 1, 1);
 	for (int i = 0; i < 3; i++) {
-		glRasterPos2f(position + (5*i), winHeight / 10);
+		glRasterPos2f(position + (5*i), height);
 		//glRasterPos2f(i*5, position);
 		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, value[i]);	
 	}	
@@ -196,26 +199,9 @@ void View_visualization::set_Glyph_type() {
 
 	switch (glyph_type)
 	{
-	case 0:
-		glBegin(GL_LINES);
+	case 0:	
 		break;
 	case 1:
-		glBegin(GL_LINE_LOOP);
-		break;
-	case 2:
-		glBegin(GL_TRIANGLES);
-		break;
-	case 3:
-		glBegin(GL_POINTS);
-		break;
-	case 4:
-		glBegin(GL_QUADS);
-		break;
-	case 5:
-		glBegin(GL_POLYGON);
-		break;
-	default:
-		glBegin(GL_LINES);
 		break;
 	}
 }
@@ -233,10 +219,94 @@ void View_visualization::drawCircle(GLfloat cx, GLfloat cy, GLfloat radius) {
 }
 
 
-// apply the inverse coordinate transform to get the reference cell coordinates for the given point p
-void View_visualization::get_reference_coordinates(int p, int p1, int p2, int p3, int p4, int* r, int* s) {
-	*r = ((p - p1) * (p2 - p1)) / ((p2 - p1) * (p2 - p1));
-	*s = ((p - p1) * (p4 - p1)) / ((p4 - p1) * (p4 - p1));
+// apply the coordinate transform to get the reference cell coordinates for the given point p
+void View_visualization::get_reference_coordinates(double px, double py, double v1x, double v1y, double v2x, double v2y,
+	double v4x, double v4y, double* r, double* s) {
+
+	*r = (((px - v1x) * (v2x - v1x)) + ((py - v1y) * (v2y - v1y))) / ((v2x - v1x) * (v2x - v1x) + (v2y - v1y) *  (v2y - v1y));
+	*s = (((px - v1x) * (v4x - v1x)) + ((py - v1y) * (v4y - v1y))) / ((v4x - v1x) * (v4x - v1x) + (v4y - v1y) *  (v4y - v1y));
+	
+}
+
+void View_visualization::draw_cones(float x, float y, fftw_real  wn, fftw_real hn, int i, int j, float magnitude) {
+	
+	float angle;
+	// define the radius to be half of the cell width
+	float radius = wn / 2;
+	glPushMatrix();
+	// Translate glyph to middle of current cell
+	glTranslatef(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn, 0);
+	// Compute arctangent of vector y and x values
+	angle = atan2(y, x);
+	angle = 180 * angle / M_PI;
+	// Rotate glyph according to computed vector orientation
+	glRotatef(90 - angle, 0.0, 0.0, -1.0);
+	glRotatef(-90.0, 1.0, 0.0, 0.0);
+	// Draw the solid cones with specified radius
+	glutSolidCone(radius / 2, (radius / 2) + (radius / 2 * magnitude), 3, 3);
+	glPopMatrix();
+}
+
+void View_visualization::rotate(float x, float y, float* newx, float* newy, float pivotx, float pivoty, float angle) {
+	x = x - pivotx;
+	y = y - pivoty;
+
+	float c, s;
+	c = cos(angle);
+	s = sin(angle);
+
+	*newx = (x * c) - (y * s);
+	*newy = (x * s) + (y * c);
+	*newx = *newx + pivotx;
+	*newy = *newy + pivoty;
+}
+
+void View_visualization::draw_arrows(float x, float y, fftw_real  wn, fftw_real hn, int i, int j, float magnitude) {
+	float angle;
+	// define the radius to be half of the cell width
+	float radius = wn / 2;
+	// define the location of the tip of the triangle
+	float scaled_top_x = (wn + (fftw_real)i * wn) + vec_scale * x;
+	float scaled_top_y = (hn + (fftw_real)j * hn) + vec_scale * y;
+	float top_x = (wn + (fftw_real)i * wn) + x;
+	float top_y = (hn + (fftw_real)j * hn) + y;
+	// define the location of the base of the triangle by rotation by +- 90 degrees
+	float left_x, left_y, right_x, right_y;
+	//rotate(top_x, top_y, &left_x, &left_y, wn + (fftw_real)i * wn, hn + (fftw_real)j * hn, M_PI / 2);
+	//rotate(top_x, top_y, &right_x, &right_y, wn + (fftw_real)i * wn, hn + (fftw_real)j * hn, -M_PI / 2);
+
+	float base_scaling = 100;
+	glBegin(GL_TRIANGLES);
+		glVertex2f((wn + (fftw_real)i * wn) - base_scaling * y, (hn + (fftw_real)j * hn) + base_scaling * x );
+		glVertex2f((wn + (fftw_real)i * wn) + base_scaling * y, (hn + (fftw_real)j * hn) - base_scaling * x);
+		glVertex2f((wn + (fftw_real)i * wn) + vec_scale * x, (hn + (fftw_real)j * hn) + vec_scale * y);
+	glEnd();
+
+	/*printf("Left: %f %f\n", left_x, left_y);
+	printf("Right: %f %f\n", right_x, right_y);
+	printf("Top: %f %f\n", scaled_top_x, scaled_top_y);*/
+	/*printf("Left: %f %f\n", -top_y, top_x);
+	printf("Right: %f %f\n", top_y, -top_x);
+	printf("Top: %f %f\n", scaled_top_x, scaled_top_y);
+
+	//_sleep(100);
+
+	/*glPushMatrix();
+	// Translate glyph to middle of current cell
+	glTranslatef((wn + (fftw_real)i * wn) + vec_scale * x, (hn + (fftw_real)j * hn) + vec_scale * y, 0);
+	// Compute arctangent of vector y and x values
+	angle = atan2(y, x);
+	angle = 180 * angle / M_PI;
+	// Rotate arrowhead according to computed vector orientation
+	glRotatef(90 - angle, 0.0, 0.0, -1.0);
+	glRotatef(-90.0, 1.0, 0.0, 0.0); 
+	// Draw the solid cones with specified radius
+	glutSolidCone(radius / 2, (radius / 2) + (radius / 2 * magnitude), 3, 3);
+	glPopMatrix();
+	*/
+
+
+
 }
 
 void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* color,int* DENSITY, int* VELOCITY, int* FORCE, int* dataset,
@@ -248,11 +318,12 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 	fftw_real  hn = (fftw_real)winHeight / (fftw_real)(DIM + 1);  // Grid cell height
 	float value0, value1, value2, value3;
 	int idx0, idx1, idx2, idx3;
-
+	double px0, py0, px1, py1, px2, py2, px3, py3;
+	double r, s;
 	if (draw_smoke)
 	{
-		\
-		double px0, py0, px1, py1, px2, py2, px3, py3;
+	
+		
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glBegin(GL_TRIANGLES);
 		for (j = 0; j < DIM - 1; j++)            //draw smoke
@@ -274,6 +345,7 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 				px3 = wn + (fftw_real)(i + 1) * wn;
 				py3 = hn + (fftw_real)j * hn;
 				idx3 = (j * DIM) + (i + 1);
+
      			// draw smoke density
 				if (*dataset == *DENSITY) {
 					// scalar values are simply the rho/density values
@@ -334,13 +406,13 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 	//gluLookAt(0, 0, 2, 0, 0, 0, 0, 1, 0);
 
 	//draw vector field by using glyphs
+
+
+	
 	
 	float x, y, scalar, magnitude;
 	if (draw_vecs)
 	{
-		//glBegin(GL_LINES);
-		//GL_TRIANGLES
-		//set_Glyph_type();
 		for (i = 0; i < DIM; i+= glyph_samplingrateX)
 			for (j = 0; j < DIM; j+= glyph_samplingrateY)
 			{
@@ -369,10 +441,7 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 						x = model_fft->fx[idx];
 						y = model_fft->fy[idx];
 					}
-					// compute magnitude of chosen vector dataset
-					magnitude = sqrt((x * x) + (y * y));
-					magnitude *= 10;
-
+				
 					// use x and y to draw corresponding direction of vector
 					//glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
 					//glVertex2f((wn + (fftw_real)i * wn) + (vec_scale + (magnitude * vec_scale)) * x, (hn + (fftw_real)j * hn) + (vec_scale + (magnitude * vec_scale)) * y);
@@ -386,44 +455,67 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 					idx1 = ((j + 1) * DIM) + i;
 					idx2 = ((j + 1) * DIM) + (i + 1);
 					idx3 = (j * DIM) + (i + 1);
-					
-					// compute derivative of vertical sides of cell
-					x = (0.5*(model_fft->rho[idx1] - model_fft->rho[idx0]) / wn) + (0.5*(model_fft->rho[idx2] - model_fft->rho[idx3]) / wn);
-					y = (0.5*(model_fft->rho[idx3] - model_fft->rho[idx0]) / wn) + (0.5*(model_fft->rho[idx2] - model_fft->rho[idx1]) / hn);
 
+					px0 = wn + (fftw_real)i * wn;
+					py0 = hn + (fftw_real)j * hn;
 					
 
+					px1 = wn + (fftw_real)i * wn;
+					py1 = hn + (fftw_real)(j + 1) * hn;
+				
+
+					px2 = wn + (fftw_real)(i + 1) * wn;
+					py2 = hn + (fftw_real)(j + 1) * hn;
+				
+
+					px3 = wn + (fftw_real)(i + 1) * wn;
+					py3 = hn + (fftw_real)j * hn;
+					
+					get_reference_coordinates(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn, px0, py0,
+						px1, py1, px3, py3, &r, &s);
+
+
+					value0 = sqrt((model_fft->vx[idx0] * model_fft->vx[idx0]) + (model_fft->vy[idx0] * model_fft->vy[idx0]));
+					value1 = sqrt((model_fft->vx[idx1] * model_fft->vx[idx1]) + (model_fft->vy[idx1] * model_fft->vy[idx1]));
+					value2 = sqrt((model_fft->vx[idx2] * model_fft->vx[idx2]) + (model_fft->vy[idx2] * model_fft->vy[idx2]));
+					value3 = sqrt((model_fft->vx[idx3] * model_fft->vx[idx3]) + (model_fft->vy[idx3] * model_fft->vy[idx3]));
+
+					x = (1-s)*((model_fft->rho[idx1] - model_fft->rho[idx0]) / wn) + s * ((model_fft->rho[idx2] - model_fft->rho[idx3]) / wn);
+					y = (1-r)*((model_fft->rho[idx3] - model_fft->rho[idx0]) / hn) + r * ((model_fft->rho[idx2] - model_fft->rho[idx1]) / hn);
+
+
+					//x = (1 - s)*((value1 - value0) / hn) + s * ((value2 - value3) / hn);
+					//y = (1 - r)*((value3 - value0) / wn) + r * ((value2 - value1) / wn);
+				
+				}
+				// compute magnitude of chosen vector dataset
+				magnitude = sqrt((x * x) + (y * y));
+				magnitude *= 10;
+
+
+				// Color the glyphs
+				direction_to_color(scalar, scalar_col, *color);
+				
+
+				if (glyph_type == CONES) {
+					draw_cones(x, y, wn, hn, i, j, magnitude);
+				
+				}		
+				else if (glyph_type == ARROWS) {
+					draw_arrows(x, y, wn, hn, i, j, magnitude);
 				}
 
-				// Scale size of glyph to the cell width
-				float radius = wn/2;
-				float angle;			
-				// Draw glyph by using the magnitude of the vector and its orientation
-				glPushMatrix();			
-				// Translate glyph to current cell
-				glTranslatef(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn, 1);
-				// Compute arctangent of vector y and x values
-				angle = atan2(y, x);
-				angle = 180 * angle / M_PI;
-				// Rotate glyph according to computed vector orientation
-				glRotatef(90-angle, 0.0, 0.0, -1.0);
-				glRotatef(-90.0, 1.0, 0.0, 0.0);
-				// Draw the solid cones with specified radius
-				glutSolidCone(radius/2, radius, 3,3);			
-				// Color the glpyhs
-				direction_to_color(scalar, scalar_col, *color);
-				glPopMatrix(); 					
 			}
-		glEnd();	
+		
 	}
-
+	
 	//glDisable(GL_LIGHTING);
 	//draw color bar
-	draw_colorbar(&*color);;
+	draw_colorbar(&*color);
 	/*if (draw_steamline == 1) {
 		drawCircle(MOUSEx, MOUSEy, 5);
 	}*/
-
+	
 
 }
 

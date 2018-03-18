@@ -63,8 +63,7 @@ void do_one_simulation_step(void)
 }
 
 void visualize(void)
-{		
-	
+{
 		view.visualize( DIM, &model_fft, &color,&DENSITY, &VELOCITY, &FORCE, &dataset,
 		&SCALAR_DENSITY, &SCALAR_VELOCITY, &SCALAR_FORCE, &dataset_scalar,
 		&VECTOR_VELOCITY, &VECTOR_FORCE, &dataset_vector);
@@ -199,17 +198,21 @@ int main(int argc, char **argv)
 			control_window->add_checkbox_to_panel(glyph_rollout, "Draw glyphs", &view.draw_vecs);
 			control_window->add_checkbox_to_panel(glyph_rollout, "Color glyphs", &view.color_dir);
 
+			GLUI_Panel* field_panel = control_window->add_panel_to_panel(glyph_rollout, "Glyph field");
 			GLUI_Panel* type_panel = control_window->add_panel_to_panel(glyph_rollout, "Glyph type");
 			GLUI_Panel* scalar_panel = control_window->add_panel_to_panel(glyph_rollout, "Scalar dataset");
 			GLUI_Panel* vector_panel = control_window->add_panel_to_panel(glyph_rollout, "Vector dataset");
 
-
-			GLUI_RadioGroup* type_buttons = control_window->add_radiogroup_to_panel(type_panel, &view.vector_type);
+			GLUI_RadioGroup* field_buttons = control_window->add_radiogroup_to_panel(field_panel, &view.vector_type);
+			GLUI_RadioGroup* type_buttons = control_window->add_radiogroup_to_panel(type_panel, &view.glyph_type);
 			GLUI_RadioGroup* scalar_buttons = control_window->add_radiogroup_to_panel(scalar_panel, &dataset_scalar);
 			GLUI_RadioGroup* vector_buttons = control_window->add_radiogroup_to_panel(vector_panel, &dataset_vector);
 
-			control_window->add_radiobutton_to_group(type_buttons, "Standard");
-			control_window->add_radiobutton_to_group(type_buttons, "Gradient");
+			control_window->add_radiobutton_to_group(field_buttons, "Standard");
+			control_window->add_radiobutton_to_group(field_buttons, "Gradient");
+
+			control_window->add_radiobutton_to_group(type_buttons, "Cones");
+			control_window->add_radiobutton_to_group(type_buttons, "Arrows");
 
 			control_window->add_radiobutton_to_group(scalar_buttons, "Density");
 			control_window->add_radiobutton_to_group(scalar_buttons, "Velocity");
