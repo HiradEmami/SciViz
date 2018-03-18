@@ -12,5 +12,4 @@ public:
 private:
 	void setX(int xi, int x, View_visualization* view);
 	void setY(int yi, int y, View_visualization* view);
-
 };

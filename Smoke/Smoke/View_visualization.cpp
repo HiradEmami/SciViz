@@ -39,11 +39,12 @@ View_visualization::View_visualization()
 	 glyph_samplingrateY = 1;
 
 	 //streamline parameters
-	 draw_steamline = 0; 
+	 draw_streamline = 0; 
 	 MOUSEx = 0;
 	 MOUSEy = 0;
 	 GRIDx = 0;
 	 GRIDy = 0;
+	 step_size_streamline = 2;
 
 }
 
@@ -215,7 +216,14 @@ void View_visualization::drawCircle(GLfloat cx, GLfloat cy, GLfloat radius) {
 	glEnd();
 
 }
-
+void View_visualization::drawLine(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2) {
+	glLineWidth(2.5);
+	glColor3f(1.0, 0.0, 0.0);
+	glBegin(GL_LINES);
+	glVertex2f(x1, y1);
+	glVertex2f(x2, y2);
+	glEnd();
+}
 
 // apply the coordinate transform to get the reference cell coordinates for the given point p
 void View_visualization::get_reference_coordinates(double px, double py, double v1x, double v1y, double v2x, double v2y,
@@ -395,19 +403,11 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 		}
 		glEnd();
 	}
+	if (draw_streamline == 1) {
+		display_Steamline(&*model_fft);
+	}
 	
-	/*glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_COLOR_MATERIAL);*/
-	//gluLookAt(0, 0, 2, 0, 0, 0, 0, 1, 0);
-
 	//draw vector field by using glyphs
-
-
-	
-	
 	float x, y, scalar, magnitude;
 	if (draw_vecs)
 	{
@@ -483,18 +483,15 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 
 
 					//x = (1 - s)*((value1 - value0) / hn) + s * ((value2 - value3) / hn);
-					//y = (1 - r)*((value3 - value0) / wn) + r * ((value2 - value1) / wn);
-				
+					//y = (1 - r)*((value3 - value0) / wn) + r * ((value2 - value1) / wn);	
 				}
 				// compute magnitude of chosen vector dataset
 				magnitude = sqrt((x * x) + (y * y));
 				magnitude *= 10;
 
-
 				// Color the glyphs
 				direction_to_color(scalar, scalar_col, *color);
 				
-
 				if (glyph_type == CONES) {
 					draw_cones(x, y, wn, hn, i, j, magnitude);
 				
@@ -502,23 +499,40 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 				else if (glyph_type == ARROWS) {
 					draw_arrows(x, y, wn, hn, i, j, magnitude);
 				}
-
 			}
-		
 	}
 	
 	//glDisable(GL_LIGHTING);
 	//draw color bar
-	draw_colorbar(&*color);
-	/*if (draw_steamline == 1) {
-		drawCircle(MOUSEx, MOUSEy, 5);
-	}*/
 	
 
 }
 
 void View_visualization::display_Steamline(Model_fftw* model_fft) {
+	//Draw the cicle for the first point
+	drawCircle(MOUSEx, MOUSEy, 5);
+	//Calculating the other points
+	int VELOCITYx, VELOCITYy; //speed
+	int CURRENTx, CURRENTy; //the starting point of the line
+	for (int i = 0;i <= step_size_streamline - 1;i++)
+	{
+		//taking the current x and y
+		CURRENTx = MOUSEx;
+		CURRENTy = MOUSEy;
+		//do the operation to calculate the next point and return VELOCITYx and VELOCITYy
 
+		//calculating the next point in streamline
+		MOUSEx += (GLfloat)VELOCITYx;
+		MOUSEy += (GLfloat)VELOCITYy;
+		//Updating the X and Y of the next cell and assigning it to GRIDx and GRIDy
+		GRIDx = (int)model_fft->clamp((double)(DIM + 1) * ((double)MOUSEx / (double)winWidth));
+		GRIDy = (int)model_fft->clamp((double)(DIM + 1) * ((double)(winHeight - MOUSEy) / (double)winHeight));
+		//Draw Circle at the new center
+		drawCircle(MOUSEx, MOUSEy, 5);
+		//draw line between the previous point and the new point
+		drawLine(CURRENTx, CURRENTy, MOUSEx, MOUSEy);
+
+	}
 
 }
 
