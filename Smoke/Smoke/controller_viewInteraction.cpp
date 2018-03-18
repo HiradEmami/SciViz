@@ -50,13 +50,22 @@ void controller_viewInteraction::setY(int y, View_visualization* view)
 		//parameters
 	 view->MOUSEy = y;
 }
-void controller_viewInteraction::mouse(int* btn, int* state, int* x, int* y, View_visualization* view)
+//This function 
+void controller_viewInteraction::mouse(int* btn, int* state, int* x, int* y, View_visualization* view, Model_fftw* model_fft, int DIM)
 {
 	if (*btn == GLUT_LEFT_BUTTON && *state == GLUT_DOWN)
 	{
-		view->draw_steamline = 1;
+		view->draw_steamline = 1; //
 		setX(*x,&*view);
 		setY(*y,&*view);
+		//get cell
+		int xi, yi, X, Y; double  dx, dy, len;
+		static int lmx = 0, lmy = 0;				//remembers last mouse location
+
+													// Compute the array index that corresponds to the cursor location 
+		xi = (int)model_fft->clamp((double)(DIM + 1) * ((double)*x / (double)view->winWidth));
+		yi = (int)model_fft->clamp((double)(DIM + 1) * ((double)(view->winHeight - *y) / (double)view->winHeight));
+
 		//drawSquare(MOUSEx,HEIGHT-MOUSEy);
 		glutPostRedisplay();
 

@@ -58,6 +58,7 @@ public:
 	int GRADIENT;
 	//Steamline parameters
 	GLfloat MOUSEx, MOUSEy;
+	int GRIDx, GRIDy;
 	int draw_steamline;
 };
 

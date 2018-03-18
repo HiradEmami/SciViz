@@ -94,7 +94,7 @@ void drag(int mx, int my) {
 void getPosition(int btn, int state, int x, int y) {
 	// flip the y value
 	y = view.winHeight - y;
-	interaction.mouse(&btn, &state,&x, &y,&view);
+	interaction.mouse(&btn, &state,&x, &y,&view,&model_fft,DIM);
 }
 
 // Get the horizontal and vertical screen sizes in pixel
@@ -148,7 +148,7 @@ int main(int argc, char **argv)
 	
 	
 	// define the control window and all of its functions
-	control_window = GLUI_Master.create_glui_subwindow(main_window, GLUI_SUBWINDOW_RIGHT);
+	control_window = GLUI_Master.create_glui("Control",GLUI_SUBWINDOW_RIGHT);
 
 
 

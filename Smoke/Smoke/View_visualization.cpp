@@ -42,10 +42,8 @@ View_visualization::View_visualization()
 	 draw_steamline = 0; 
 	 MOUSEx = 0;
 	 MOUSEy = 0;
-
-
-	 
-
+	 GRIDx = 0;
+	 GRIDy = 0;
 
 }
 
