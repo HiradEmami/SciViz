@@ -403,9 +403,6 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 		}
 		glEnd();
 	}
-	if (draw_streamline == 1) {
-		display_Steamline(&*model_fft);
-	}
 	
 	//draw vector field by using glyphs
 	float x, y, scalar, magnitude;
@@ -505,14 +502,91 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 	//glDisable(GL_LIGHTING);
 	//draw color bar
 	
+	if (draw_streamline == 1) {
+		display_Steamline(&*model_fft, wn);
+		drawCircle(MOUSEx, MOUSEy, 5);
+	}
 
 }
 
-void View_visualization::display_Steamline(Model_fftw* model_fft) {
+void View_visualization::bilinear_interpolation(int idx0, int idx1, int idx2, int idx3, double px0, double py0,
+	double px1, double py1, double px2, double py2, double px3, double py3, double px, double py, double *p_velX,
+	double* p_velY, Model_fftw* model_fft) {
+
+	double multiplier1, multiplier2, multiplier3, multiplier4;
+	multiplier1 = ((px1 - px) * (py2 - py)) / ((px1 - px0) * (py2 - py1));
+	multiplier2 = ((px - px0) * (py2 - py)) / ((px1 - px0) * (py2 - py1));
+	multiplier3 = ((px1 - px) * (py - py1)) / ((px1 - px0) * (py2 - py1));
+	multiplier4 = ((px - px0) * (py - py1)) / ((px1 - px0) * (py2 - py1));
+
+	float valuex0, valuex1, valuex2, valuex3;
+	float valuey0, valuey1, valuey2, valuey3;
+
+	valuex0 = model_fft->vx[idx0];
+	valuex1 = model_fft->vx[idx1];
+	valuex2 = model_fft->vx[idx2];
+	valuex3 = model_fft->vx[idx3];
+
+	valuey0 = model_fft->vy[idx0];
+	valuey1 = model_fft->vy[idx1];
+	valuey2 = model_fft->vy[idx2];
+	valuey3 = model_fft->vy[idx3];
+
+	*p_velX = (multiplier1 * valuex0) + (multiplier2 * valuex1) + (multiplier3 * valuex2) + (multiplier4 * valuex3);
+	*p_velY = (multiplier1 * valuey0) + (multiplier2 * valuey1) + (multiplier3 * valuey2) + (multiplier4 * valuey3);
+
+
+}
+void View_visualization::compute_velocity(double px, double py, double* p_velX, double* p_velY, Model_fftw* model_fft, int wn, int hn) {
+	int idx0, idx1, idx2, idx3;
+	double px0, py0, px1, py1, px2, py2, px3, py3;
+	int i, j;
+	double value_bottomleft, value_bottomright, value_topleft, value_topright;
+
+	// The grid position of point p (px, py) is already computed
+	i = GRIDy;
+	j = GRIDx;
+
+	// Compute indices of grid points and their coordinates
+
+	idx0 = (j * DIM) + i;
+	idx1 = ((j + 1) * DIM) + i;
+	idx2 = ((j + 1) * DIM) + (i + 1);
+	idx3 = (j * DIM) + (i + 1);
+
+	// lower left corner
+	px0 = wn + (fftw_real)i * wn;
+	py0 = hn + (fftw_real)j * hn;
+
+	// lower right corner
+	px1 = wn + (fftw_real)i * wn;
+	py1 = hn + (fftw_real)(j + 1) * hn;
+
+	// upper right corner
+	px2 = wn + (fftw_real)(i + 1) * wn;
+	py2 = hn + (fftw_real)(j + 1) * hn;
+
+	//upper left corner
+	px3 = wn + (fftw_real)(i + 1) * wn;
+	py3 = hn + (fftw_real)j * hn;
+
+	double r, s;
+	// Compute velocity at point p by bilinearly interpolating between edge values of cell
+	get_reference_coordinates(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn, px0, py0,
+		px1, py1, px3, py3, &r, &s);
+
+	bilinear_interpolation(idx0, idx1, idx2, idx3, px0, py0,
+		px1, py1, px2, py2, px3, py3, px, py, p_velX,
+		p_velY, &*model_fft);
+}
+
+void View_visualization::display_Steamline(Model_fftw* model_fft, int cell_size) {
 	//Draw the cicle for the first point
 	drawCircle(MOUSEx, MOUSEy, 5);
 	//Calculating the other points
-	int VELOCITYx, VELOCITYy; //speed
+	double VELOCITYx, VELOCITYy; //speed
+	VELOCITYx = 0.3;
+	VELOCITYy = 0;
 	int CURRENTx, CURRENTy; //the starting point of the line
 	for (int i = 0;i <= step_size_streamline - 1;i++)
 	{
@@ -520,10 +594,13 @@ void View_visualization::display_Steamline(Model_fftw* model_fft) {
 		CURRENTx = MOUSEx;
 		CURRENTy = MOUSEy;
 		//do the operation to calculate the next point and return VELOCITYx and VELOCITYy
+		compute_velocity(MOUSEx, MOUSEy, &VELOCITYx, &VELOCITYy, &*model_fft, cell_size, cell_size);
 
+		printf("\n%g", VELOCITYx);
 		//calculating the next point in streamline
-		MOUSEx += (GLfloat)VELOCITYx;
-		MOUSEy += (GLfloat)VELOCITYy;
+		MOUSEx += (float)(VELOCITYx*(float)cell_size);
+		MOUSEy += (float)(VELOCITYy*(float)cell_size);
+	
 		//Updating the X and Y of the next cell and assigning it to GRIDx and GRIDy
 		GRIDx = (int)model_fft->clamp((double)(DIM + 1) * ((double)MOUSEx / (double)winWidth));
 		GRIDy = (int)model_fft->clamp((double)(DIM + 1) * ((double)(winHeight - MOUSEy) / (double)winHeight));
@@ -533,7 +610,7 @@ void View_visualization::display_Steamline(Model_fftw* model_fft) {
 		drawLine(CURRENTx, CURRENTy, MOUSEx, MOUSEy);
 
 	}
-
+	
 }
 
 

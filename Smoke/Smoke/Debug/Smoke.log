@@ -5,7 +5,9 @@ c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\view_visualization.
 c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\view_visualization.cpp(280): warning C4101: 'right_x': unreferenced local variable
 c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\view_visualization.cpp(271): warning C4101: 'angle': unreferenced local variable
 c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\view_visualization.cpp(280): warning C4101: 'left_y': unreferenced local variable
-c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\view_visualization.cpp(525): warning C4700: uninitialized local variable 'VELOCITYx' used
-c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\view_visualization.cpp(526): warning C4700: uninitialized local variable 'VELOCITYy' used
+c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\view_visualization.cpp(544): warning C4101: 'value_bottomright': unreferenced local variable
+c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\view_visualization.cpp(544): warning C4101: 'value_topright': unreferenced local variable
+c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\view_visualization.cpp(544): warning C4101: 'value_topleft': unreferenced local variable
+c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\view_visualization.cpp(544): warning C4101: 'value_bottomleft': unreferenced local variable
 Controller_keyboard.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/SAFESEH' specification
   Smoke.vcxproj -> C:\Users\Hirad Gorgoroth\Documents\GitHub\SciViz\Smoke\Debug\Smoke.exe
