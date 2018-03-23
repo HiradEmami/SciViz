@@ -39,16 +39,12 @@ View_visualization::View_visualization()
 	 glyph_samplingrateY = 1;
 
 	 //streamline parameters
-	 draw_streamline = 0;
+	 draw_streamline = 0; 
 	 MOUSEx = 0;
 	 MOUSEy = 0;
 	 GRIDx = 0;
 	 GRIDy = 0;
-
-
-
-	 fftw_real wn = (fftw_real)winWidth / (fftw_real)(DIM + 1);   // Grid cell width
-	 fftw_real hn = (fftw_real)winHeight / (fftw_real)(DIM + 1);  // Grid cell height
+	 step_size_streamline = 2;
 
 }
 
@@ -220,7 +216,14 @@ void View_visualization::drawCircle(GLfloat cx, GLfloat cy, GLfloat radius) {
 	glEnd();
 
 }
-
+void View_visualization::drawLine(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2) {
+	glLineWidth(2.5);
+	glColor3f(1.0, 0.0, 0.0);
+	glBegin(GL_LINES);
+	glVertex2f(x1, y1);
+	glVertex2f(x2, y2);
+	glEnd();
+}
 
 // apply the coordinate transform to get the reference cell coordinates for the given point p
 void View_visualization::get_reference_coordinates(double px, double py, double v1x, double v1y, double v2x, double v2y,
@@ -317,7 +320,8 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 	int* VECTOR_VELOCITY, int* VECTOR_FORCE,int* dataset_vector)
 {
 	int        i, j, idx;
-
+	fftw_real  wn = (fftw_real)winWidth / (fftw_real)(DIM + 1);   // Grid cell width
+	fftw_real  hn = (fftw_real)winHeight / (fftw_real)(DIM + 1);  // Grid cell height
 	float value0, value1, value2, value3;
 	int idx0, idx1, idx2, idx3;
 	double px0, py0, px1, py1, px2, py2, px3, py3;
@@ -400,18 +404,7 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 		glEnd();
 	}
 	
-	/*glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_COLOR_MATERIAL);*/
-	//gluLookAt(0, 0, 2, 0, 0, 0, 0, 1, 0);
-
 	//draw vector field by using glyphs
-
-
-	
-	
 	float x, y, scalar, magnitude;
 	if (draw_vecs)
 	{
@@ -487,18 +480,15 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 
 
 					//x = (1 - s)*((value1 - value0) / hn) + s * ((value2 - value3) / hn);
-					//y = (1 - r)*((value3 - value0) / wn) + r * ((value2 - value1) / wn);
-				
+					//y = (1 - r)*((value3 - value0) / wn) + r * ((value2 - value1) / wn);	
 				}
 				// compute magnitude of chosen vector dataset
 				magnitude = sqrt((x * x) + (y * y));
 				magnitude *= 10;
 
-
 				// Color the glyphs
 				direction_to_color(scalar, scalar_col, *color);
 				
-
 				if (glyph_type == CONES) {
 					draw_cones(x, y, wn, hn, i, j, magnitude);
 				
@@ -506,26 +496,23 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 				else if (glyph_type == ARROWS) {
 					draw_arrows(x, y, wn, hn, i, j, magnitude);
 				}
-
-
 			}
-		
 	}
 	
 	//glDisable(GL_LIGHTING);
 	//draw color bar
-	draw_colorbar(&*color);
+	
 	if (draw_streamline == 1) {
-		//drawCircle(MOUSEx, MOUSEy, 5);
-		//compute_velocity(px, py);
+		display_Steamline(&*model_fft, wn);
+		drawCircle(MOUSEx, MOUSEy, 5);
 	}
+
 }
 
-
 void View_visualization::bilinear_interpolation(int idx0, int idx1, int idx2, int idx3, double px0, double py0,
-	double px1, double py1, double px2, double py2, double px3, double py3, double px, double py, double *p_velX, 
-	double *p_velY, Model_fftw* model_fft) {
-	
+	double px1, double py1, double px2, double py2, double px3, double py3, double px, double py, double *p_velX,
+	double* p_velY, Model_fftw* model_fft) {
+
 	double multiplier1, multiplier2, multiplier3, multiplier4;
 	multiplier1 = ((px1 - px) * (py2 - py)) / ((px1 - px0) * (py2 - py1));
 	multiplier2 = ((px - px0) * (py2 - py)) / ((px1 - px0) * (py2 - py1));
@@ -535,7 +522,7 @@ void View_visualization::bilinear_interpolation(int idx0, int idx1, int idx2, in
 	float valuex0, valuex1, valuex2, valuex3;
 	float valuey0, valuey1, valuey2, valuey3;
 
-	valuex0 = model_fft->vx[idx0]; 
+	valuex0 = model_fft->vx[idx0];
 	valuex1 = model_fft->vx[idx1];
 	valuex2 = model_fft->vx[idx2];
 	valuex3 = model_fft->vx[idx3];
@@ -550,8 +537,7 @@ void View_visualization::bilinear_interpolation(int idx0, int idx1, int idx2, in
 
 
 }
-
-void View_visualization::compute_velocity(double px, double py, double* p_velX, double* p_velY, Model_fftw* model_fft) {
+void View_visualization::compute_velocity(double px, double py, double* p_velX, double* p_velY, Model_fftw* model_fft, int wn, int hn) {
 	int idx0, idx1, idx2, idx3;
 	double px0, py0, px1, py1, px2, py2, px3, py3;
 	int i, j;
@@ -592,12 +578,39 @@ void View_visualization::compute_velocity(double px, double py, double* p_velX, 
 	bilinear_interpolation(idx0, idx1, idx2, idx3, px0, py0,
 		px1, py1, px2, py2, px3, py3, px, py, p_velX,
 		p_velY, &*model_fft);
+}
 
+void View_visualization::display_Steamline(Model_fftw* model_fft, int cell_size) {
+	//Draw the cicle for the first point
+	drawCircle(MOUSEx, MOUSEy, 5);
+	//Calculating the other points
+	double VELOCITYx, VELOCITYy; //speed
+	VELOCITYx = 0.3;
+	VELOCITYy = 0;
+	int CURRENTx, CURRENTy; //the starting point of the line
+	for (int i = 0;i <= step_size_streamline - 1;i++)
+	{
+		//taking the current x and y
+		CURRENTx = MOUSEx;
+		CURRENTy = MOUSEy;
+		//do the operation to calculate the next point and return VELOCITYx and VELOCITYy
+		compute_velocity(MOUSEx, MOUSEy, &VELOCITYx, &VELOCITYy, &*model_fft, cell_size, cell_size);
+
+		printf("\n%g", VELOCITYx);
+		//calculating the next point in streamline
+		MOUSEx += (float)(VELOCITYx*(float)cell_size);
+		MOUSEy += (float)(VELOCITYy*(float)cell_size);
 	
+		//Updating the X and Y of the next cell and assigning it to GRIDx and GRIDy
+		GRIDx = (int)model_fft->clamp((double)(DIM + 1) * ((double)MOUSEx / (double)winWidth));
+		GRIDy = (int)model_fft->clamp((double)(DIM + 1) * ((double)(winHeight - MOUSEy) / (double)winHeight));
+		//Draw Circle at the new center
+		drawCircle(MOUSEx, MOUSEy, 5);
+		//draw line between the previous point and the new point
+		drawLine(CURRENTx, CURRENTy, MOUSEx, MOUSEy);
 
-
-
-
+	}
+	
 }
 
 
