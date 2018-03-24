@@ -148,9 +148,10 @@ int main(int argc, char **argv)
 	
 	
 	// define the control window and all of its functions
-	control_window = GLUI_Master.create_glui("Control",GLUI_SUBWINDOW_RIGHT);
+	//control_window = GLUI_Master.create_glui("Control",GLUI_SUBWINDOW_RIGHT);
+	control_window = GLUI_Master.create_glui_subwindow(main_window, GLUI_SUBWINDOW_RIGHT);
 
-
+	
 
 	//--------------define all options for the COLORMAPPING assignment---------------------------//
 	GLUI_Rollout* color_rollout = control_window->add_rollout("Colors", true);
@@ -228,8 +229,10 @@ int main(int argc, char **argv)
 			GLUI_Spinner* N_sampleY_spinner = control_window->add_spinner_to_panel(glyph_rollout, "Row sampling", GLUI_SPINNER_INT, &view.glyph_samplingrateY);
 			N_sampleY_spinner->set_float_limits(1, 50);
 			
+	//--------------define all options for the STREAMLINE assignment---------------------------//	
+			GLUI_Rollout* streamline_rollout = control_window->add_rollout("Streamline", true);
+			control_window->add_checkbox_to_panel(streamline_rollout, "Draw streamline", &view.draw_streamline);
 			
-
 	
 	glutMainLoop();			//calls do_one_simulation_step, keyboard, display, drag, reshape
 	return 0;

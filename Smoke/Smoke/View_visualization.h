@@ -18,7 +18,6 @@ public:
 	void direction_to_color(float scalar, int colormap, Model_color color);
 	void set_colormap(Model_color* color, float vy, int dataset);
 	void set_Glyph_type();
-	void draw2Dglyph();
 	void drawLine(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2);
 	void get_reference_coordinates(double px, double py, double v1x, double v1y, double v2x, double v2y,
 		double v4x, double v4y, double* r, double* s);
@@ -26,7 +25,7 @@ public:
 	void draw_arrows(float x, float y, fftw_real  wn, fftw_real hn, int i, int j, float magnitude);
 	void rotate(float x, float y, float* newx, float* newy, float pivotx, float pivoty, float angle);
 	void drawCircle(GLfloat cx, GLfloat cy, GLfloat radius);
-	void display_Steamline(Model_fftw* model_fft, int cell_size);
+	void display_Steamline(Model_fftw* model_fft, int cell_size, Model_color* color);
 	void bilinear_interpolation(int idx0, int idx1, int idx2, int idx3, double px0, double py0,
 		double px1, double py1, double px2, double py2, double px3, double py3, double px, double py, double *p_velX,
 		double* p_velY, Model_fftw* model_fft);
@@ -62,10 +61,12 @@ public:
 	int STANDARD;
 	int GRADIENT;
 	//Streamline parameters
-	GLfloat MOUSEx, MOUSEy; //pixel value to draw the circle
+	double MOUSEx, MOUSEy; //pixel value to draw the circle
 	int GRIDx, GRIDy; //Grid value that we get by clicking  
 	int draw_streamline;
-	int step_size_streamline;
+	int streamline_size;
+	int mouse_clicked;
+	int streamline_finished;
 	
 	
 

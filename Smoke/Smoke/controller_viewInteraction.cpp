@@ -57,9 +57,6 @@ void controller_viewInteraction::mouse(int* btn, int* state, int* x, int* y, Vie
 {
 	if (*btn == GLUT_LEFT_BUTTON && *state == GLUT_DOWN)
 	{
-		view->draw_streamline = 1; //
-		
-
 		//get cell
 		int xi, yi, X, Y; double  dx, dy, len;
 		static int lmx = 0, lmy = 0;				//remembers last mouse location
@@ -70,8 +67,9 @@ void controller_viewInteraction::mouse(int* btn, int* state, int* x, int* y, Vie
 
 		setX(xi,*x, &*view);
 		setY(yi,*y, &*view);
+		view->mouse_clicked = 1;
 		
-
+		printf("NEW GRIDx: %d NEW GRIDy: %d\n", view->GRIDx, view->GRIDy);
 		//drawSquare(MOUSEx,HEIGHT-MOUSEy);
 		glutPostRedisplay();
 
