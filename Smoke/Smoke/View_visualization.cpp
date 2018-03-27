@@ -11,7 +11,7 @@
 
 View_visualization::View_visualization()
 {
-	 DIM = 3;
+	 DIM = 50;
 	 color_dir = 0;            //use direction color-coding or not
 	 vec_scale = 1000;			//scaling of hedgehogs
 	 draw_smoke = 0;           //draw the smoke or not
@@ -26,7 +26,7 @@ View_visualization::View_visualization()
 	 COLOR_TWOCOLORS = 5;
 	 scalar_col = 0;
 	 //glyph parameters
-	 glyph_type = 0;
+	 glyph_type = 1;
 	 CONES = 0;
 	 ARROWS = 1;
 
@@ -35,16 +35,16 @@ View_visualization::View_visualization()
 	 STANDARD = 0;
 	 GRADIENT = 1;
 
-	 glyph_samplingrateX = 1;
-	 glyph_samplingrateY = 1;
+	 glyph_samplesX = 50;
+	 glyph_samplesY = 50;
 
 	 //streamline parameters
-	 draw_streamline = 1; 
+	 draw_streamline = 0; 
 	 MOUSEx = 0;
 	 MOUSEy = 0;
 	 GRIDx = 0;
 	 GRIDy = 0;
-	 streamline_size = 20;
+	 streamline_size = 50;
 	 mouse_clicked = 0;
 	 streamline_finished = 1;
 
@@ -219,7 +219,7 @@ void View_visualization::drawCircle(GLfloat cx, GLfloat cy, GLfloat radius) {
 
 }
 void View_visualization::drawLine(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2) {
-	glLineWidth(2.5);
+	glLineWidth(5);
 	//glColor3f(1.0, 0.0, 0.0);
 	glBegin(GL_LINES);
 	glVertex2f(x1, y1);
@@ -410,9 +410,9 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 	float x, y, scalar, magnitude;
 	if (draw_vecs)
 	{
-		for (j = 0; j < DIM; j += glyph_samplingrateY)
+		for (j = 0; j < glyph_samplesY; j += 1)
 		{
-			for (i = 0; i < DIM; i += glyph_samplingrateX)
+			for (i = 0; i < glyph_samplesX; i += 1)
 			{
 				idx = (j * DIM) + i;
 				// choose scalar for coloring 
@@ -521,6 +521,9 @@ void View_visualization::bilinear_interpolation(int idx0, int idx1, int idx2, in
 	double valuex0, valuex1, valuex2, valuex3;
 	double valuey0, valuey1, valuey2, valuey3;
 
+	double xDiff = px2 - px0;
+	double ydiff = py2 - py0;
+
 	//x velocity values of cell vertices
 	valuex0 = model_fft->vx[idx0];
 	valuex1 = model_fft->vx[idx1];
@@ -534,17 +537,19 @@ void View_visualization::bilinear_interpolation(int idx0, int idx1, int idx2, in
 	valuey3 = model_fft->vy[idx3];
 
 	double x1, x2, y1, y2;
-	
 
-	x1 = ((px1 - px) / (px1 - px0)) * valuex0 + ((px - px0) / (px1 - px0)) * valuex1;
-	x2 = ((px1 - px) / (px1 - px0)) * valuex3 + ((px - px0) / (px1 - px0)) * valuex2;
-	*interpolation_x = ((py1 - py) / (py1 - py0)) * x1 + ((py - py0) / (py1 - py0)) * x2;
+	//printf("Vertex values X: %g %g %g %g\n", valuex0, valuex1, valuex2, valuex3);
+	//printf("Vertex values Y: %g %g %g %g\n", valuey0, valuey1, valuey2, valuey3);
+
+	x1 = ((px2 - px) / xDiff) * valuex0 + ((px - px0) / xDiff) * valuex1;
+	x2 = ((px2 - px) / xDiff) * valuex2 + ((px - px0) / xDiff) * valuex3;
+	*interpolation_x = ((py1 - py) / ydiff) * x1 + ((py - py0) / ydiff) * x2;
 
 
 
-	y1 = ((px1 - px) / (px1 - px0)) * valuey0 + ((px - px0) / (px1 - px0)) * valuey1;
-	y2 = ((px1 - px) / (px1 - px0)) * valuey3 + ((px - px0) / (px1 - px0)) * valuey2;
-	*interpolation_y = ((py1 - py) / (py1 - py0)) * y1 + ((py - py0) / (py1 - py0)) * y2;
+	y1 = ((px2 - px) / xDiff) * valuey0 + ((px - px0) / xDiff) * valuey1;
+	y2 = ((px2 - px) / xDiff) * valuey2 + ((px - px0) / xDiff) * valuey3;
+	*interpolation_y = ((py1 - py) / ydiff) * y1 + ((py - py0) / ydiff) * y2;
 
 	//printf("Velocity: %g %g\n", *interpolation_x, *interpolation_y);
 
@@ -559,8 +564,6 @@ void View_visualization::compute_velocity(double px, double py, double* p_velX, 
 	i = GRIDx;
 	j = GRIDy;
 
-
-	printf("VEL: Gridx: %d Gridy: %d\n", i, j);
 
 	// Compute indices of grid points and their coordinates
 	idx0 = (j * DIM) + i;
@@ -589,8 +592,8 @@ void View_visualization::compute_velocity(double px, double py, double* p_velX, 
 	//printf("X: %g %g %g %g\n", px0, px1, px2, px3);
 	//printf("Y: %g %g %g %g\n", py0, py1, py2, py3);
     //compute x and y velocity by interpolating by the four vertices of the cell
-	bilinear_interpolation(idx0, idx1, idx2, idx3, px0, py0,
-		px2, py2, px1, py1, px3, py3, px, py, p_velX,
+	bilinear_interpolation(idx0, idx3, idx1, idx2, px0, py0,
+		px1, py1, px2, py2, px3, py3, px, py, p_velX,
 		p_velY, model_fft);
 	
 
@@ -599,7 +602,7 @@ void View_visualization::compute_velocity(double px, double py, double* p_velX, 
 
 void View_visualization::display_Steamline(Model_fftw* model_fft, int cell_size, Model_color* color) {
 	if (mouse_clicked) {
-
+		cell_size = cell_size / 2;
 		//Draw the cicle for the first point
 		//drawCircle(MOUSEx, MOUSEy, 5);
 		//Calculating the other points
@@ -622,6 +625,8 @@ void View_visualization::display_Steamline(Model_fftw* model_fft, int cell_size,
 		CURRENTx = MOUSEx;
 		CURRENTy = MOUSEy;
 
+		int count = 1;
+
 		while(i < streamline_size && CURRENTx > 0 && CURRENTx < winWidth && CURRENTy > 0 && CURRENTy < winHeight)
 		{
 			//taking the current x and y
@@ -639,14 +644,34 @@ void View_visualization::display_Steamline(Model_fftw* model_fft, int cell_size,
 			compute_RGB(color, magnitude, &R, &G, &B);
 			glColor3f(R, G, B);
 			
+	
 		
 			//calculating the next point in streamline
-			MOUSEx += (float)(VELOCITYx*(float)cell_size);
-			MOUSEy += (float)(VELOCITYy*(float)cell_size);
+			MOUSEx += VELOCITYx*(double)cell_size/2;
+			MOUSEy += VELOCITYy*(double)cell_size/2;
+
+
+			if (count) {
+				printf("----------------------------------------------\n");
+				printf("Current point: %g %g\n", CURRENTx, CURRENTy);
+				printf("Current grid: %d %d\n", GRIDx, GRIDy);
+				printf("Calculated velocity: %g %g\n", VELOCITYx, VELOCITYy);
+				printf("New point: %g %g\n", MOUSEx, MOUSEy);
+				printf("%d\n", cell_size);
+			
+
+			}
 
 			//Updating the X and Y of the next cell and assigning it to GRIDx and GRIDy
-			GRIDx = (int)model_fft->clamp((double)(DIM + 1) * ((double)MOUSEx / (double)winWidth));
-			GRIDy = (int)model_fft->clamp((double)(DIM + 1) * ((double)(winHeight - MOUSEy) / (double)winHeight));
+			GRIDx = (int)model_fft->clamp((double)(50 + 1) * ((double)MOUSEx / (double)winWidth));
+			GRIDy = (int)model_fft->clamp((double)(50 + 1) * ((double)(winHeight - MOUSEy) / (double)winHeight));
+
+			if (count) {
+				printf("New grid: %d %d\n", GRIDx, GRIDy);
+				
+				count = 0;
+
+			}
 			
 			//Draw Circle at the new center
 			//drawCircle(MOUSEx, MOUSEy, 5);

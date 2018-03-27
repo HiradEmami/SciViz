@@ -55,8 +55,8 @@ public:
 	int glyph_type;
 	int CONES;
 	int ARROWS;
-	int glyph_samplingrateX;
-	int glyph_samplingrateY;
+	int glyph_samplesX;
+	int glyph_samplesY;
 	int vector_type;
 	int STANDARD;
 	int GRADIENT;

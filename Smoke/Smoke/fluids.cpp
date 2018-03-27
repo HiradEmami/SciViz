@@ -223,10 +223,10 @@ int main(int argc, char **argv)
 			control_window->add_radiobutton_to_group(vector_buttons, "Force");
 
 
-			GLUI_Spinner* N_sampleX_spinner = control_window->add_spinner_to_panel(glyph_rollout, "Col sampling", GLUI_SPINNER_INT, &view.glyph_samplingrateX);
+			GLUI_Spinner* N_sampleX_spinner = control_window->add_spinner_to_panel(glyph_rollout, "Row samples", GLUI_SPINNER_INT, &view.glyph_samplesY);
 			N_sampleX_spinner->set_float_limits(1, 50);
 
-			GLUI_Spinner* N_sampleY_spinner = control_window->add_spinner_to_panel(glyph_rollout, "Row sampling", GLUI_SPINNER_INT, &view.glyph_samplingrateY);
+			GLUI_Spinner* N_sampleY_spinner = control_window->add_spinner_to_panel(glyph_rollout, "Column samples", GLUI_SPINNER_INT, &view.glyph_samplesX);
 			N_sampleY_spinner->set_float_limits(1, 50);
 			
 	//--------------define all options for the STREAMLINE assignment---------------------------//	
