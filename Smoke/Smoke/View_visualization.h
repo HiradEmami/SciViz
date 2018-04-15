@@ -32,7 +32,7 @@ public:
 	void compute_velocity(double px, double py, double* p_velX, double* p_velY, Model_fftw* model_fft, int wn, int hn);
 	void visualize(int DIM, Model_fftw* model_fft, Model_color* color,int* DENSITY, int* VELOCITY, int* FORCE, int* dataset,
 		int* SCALAR_DENSITY, int* SCALAR_VELOCITY, int* SCALAR_FORCE, int* dataset_scalar,
-		int* VECTOR_VELOCITY, int* VECTOR_FORCE, int* dataset_vector);
+		int* VECTOR_VELOCITY, int* VECTOR_FORCE, int* dataset_vector, float z, float alpha);
 	//parameters
 	int DIM;				//size of simulation grid
 	int   winWidth, winHeight;  //size of the graphics window, in pixels
@@ -67,6 +67,12 @@ public:
 	int streamline_size;
 	int mouse_clicked;
 	int streamline_finished;
+
+	//slices parameters
+	int draw_slices;
+	float ex, ey, ez, cx, cy, cz, ux, uy, uz;
+	float alpha;
+	float z;
 	
 	
 

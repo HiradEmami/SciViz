@@ -1,6 +1,8 @@
 #include "controller_viewInteraction.h"
 #include "Model_fftw.h"
 #include "View_visualization.h"
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 controller_viewInteraction::controller_viewInteraction()
 {
@@ -38,7 +40,16 @@ void controller_viewInteraction::reshape(View_visualization* view,int* w, int* h
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluOrtho2D(0.0, (GLdouble)*w, 0.0, (GLdouble)*h);
+	GLdouble aspect = *w / *h;
+	gluPerspective(90.0f, aspect, 0.001, 10);
 	view->winWidth = *w; view->winHeight = *h;
+
+
+	/*glViewport(0.0f, 0.0f, (GLfloat)*w, (GLfloat)*h);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluOrtho2D(0.0, (GLdouble)*w, 0.0, (GLdouble)*h);
+	view->winWidth = *w; view->winHeight = *h;*/
 
 }
 void controller_viewInteraction::setX(int xi,int x, View_visualization* view)

@@ -14,7 +14,7 @@ View_visualization::View_visualization()
 	 DIM = 50;
 	 color_dir = 0;            //use direction color-coding or not
 	 vec_scale = 1000;			//scaling of hedgehogs
-	 draw_smoke = 0;           //draw the smoke or not
+	 draw_smoke = 1;           //draw the smoke or not
 	 draw_vecs = 1;            //draw the vector field or not
 	 use_clamp = 1;
 	 colorbar_width = 50;
@@ -24,7 +24,7 @@ View_visualization::View_visualization()
 	 COLOR_HEATMAP = 3;
 	 COLOR_DIVERGING = 4;
 	 COLOR_TWOCOLORS = 5;
-	 scalar_col = 0;
+	 scalar_col = 2;
 	 //glyph parameters
 	 glyph_type = 1;
 	 CONES = 0;
@@ -48,6 +48,13 @@ View_visualization::View_visualization()
 	 mouse_clicked = 0;
 	 streamline_finished = 1;
 
+	 //slices parameters
+	 draw_slices = 0;
+	 ex = 0;  ey = 0;  ez = 0;
+	 cx = 0;  cy = 0;  cz = -1;
+	 ux = 0;  uy = 1;  uz = 0;
+	 
+	
 }
 
 //------ VISUALIZATION CODE STARTS HERE -----------------------------------------------------------------
@@ -91,7 +98,7 @@ void View_visualization::set_colormap(Model_color* color, float vy, int dataset)
 	color->rgb2hsv(R, G, B, &h, &s, &v);
 	color->hsv2rgb(h, s, v, &R, &G, &B);
 
-	glColor3f(R, G, B);
+	glColor4f(R, G, B, alpha);
 
 }
 //direction_to_color: Set the current color by mapping the magnitude of a direction vector (x,y), using
@@ -124,7 +131,7 @@ void View_visualization::direction_to_color(float scalar, int colormap, Model_co
 	else {
 		r = g = b = 1;
 	}
-	glColor3f(r, g, b);
+	glColor4f(r, g, b, alpha);
 }
 //compute the rgb values given the current segment and the current colormap
 void View_visualization::compute_RGB(Model_color* color,float value, float* R, float* G, float* B) {
@@ -166,11 +173,11 @@ void View_visualization::draw_colorbar(Model_color* color) {
 		color->rgb2hsv(R, G, B, &H, &S, &V);
 		color->hsv2rgb(H, S, V, &R, &G, &B);
 		glColor3f(R, G, B);
-		glVertex2f((i * segment_width), 0);
-		glVertex2f((i * segment_width), colorbar_height);
+		glVertex3f((i * segment_width), 0, cz);
+		glVertex3f((i * segment_width), colorbar_height, cz);
 
-		glVertex2f((i * segment_width) + segment_width, 0);
-		glVertex2f((i * segment_width) + segment_width, colorbar_height);
+		glVertex3f((i * segment_width) + segment_width, 0, cz);
+		glVertex3f((i * segment_width) + segment_width, colorbar_height, cz);
 
 	}
 	glEnd();
@@ -222,8 +229,8 @@ void View_visualization::drawLine(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2
 	glLineWidth(5);
 	//glColor3f(1.0, 0.0, 0.0);
 	glBegin(GL_LINES);
-	glVertex2f(x1, y1);
-	glVertex2f(x2, y2);
+	glVertex3f(x1, y1, z);
+	glVertex3f(x2, y2, z);
 	glEnd();
 }
 
@@ -243,7 +250,7 @@ void View_visualization::draw_cones(float x, float y, fftw_real  wn, fftw_real h
 	float radius = wn / 2;
 	glPushMatrix();
 	// Translate glyph to middle of current cell
-	glTranslatef(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn, 0);
+	glTranslatef(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn, z);
 	// Compute arctangent of vector y and x values
 	angle = atan2(y, x);
 	angle = 180 * angle / M_PI;
@@ -285,9 +292,9 @@ void View_visualization::draw_arrows(float x, float y, fftw_real  wn, fftw_real 
 
 	float base_scaling = 100;
 	glBegin(GL_TRIANGLES);
-		glVertex2f((wn + (fftw_real)i * wn) - base_scaling * y, (hn + (fftw_real)j * hn) + base_scaling * x );
-		glVertex2f((wn + (fftw_real)i * wn) + base_scaling * y, (hn + (fftw_real)j * hn) - base_scaling * x);
-		glVertex2f((wn + (fftw_real)i * wn) + vec_scale * x, (hn + (fftw_real)j * hn) + vec_scale * y);
+		glVertex3f((wn + (fftw_real)i * wn) - base_scaling * y, (hn + (fftw_real)j * hn) + base_scaling * x, z);
+		glVertex3f((wn + (fftw_real)i * wn) + base_scaling * y, (hn + (fftw_real)j * hn) - base_scaling * x, z);
+		glVertex3f((wn + (fftw_real)i * wn) + vec_scale * x, (hn + (fftw_real)j * hn) + vec_scale * y, z);
 	glEnd();
 
 	/*printf("Left: %f %f\n", left_x, left_y);
@@ -319,8 +326,28 @@ void View_visualization::draw_arrows(float x, float y, fftw_real  wn, fftw_real 
 
 void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* color,int* DENSITY, int* VELOCITY, int* FORCE, int* dataset,
 	int* SCALAR_DENSITY, int* SCALAR_VELOCITY, int* SCALAR_FORCE, int* dataset_scalar,
-	int* VECTOR_VELOCITY, int* VECTOR_FORCE,int* dataset_vector)
+	int* VECTOR_VELOCITY, int* VECTOR_FORCE,int* dataset_vector, float slicedepth, float a)
+
 {
+	alpha = a;
+	z = slicedepth;
+	
+	//printf("%g\n", cz);
+
+	if (draw_slices) {
+		glShadeModel(GL_SMOOTH);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_BLEND);
+
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		gluLookAt(ex, ey, ez, cx, cy, cz, ux, uy, uz);
+		
+	}
+	
+
+
+
 	int        i, j, idx;
 	fftw_real  wn = (fftw_real)winWidth / (fftw_real)(DIM + 1);   // Grid cell width
 	fftw_real  hn = (fftw_real)winHeight / (fftw_real)(DIM + 1);  // Grid cell height
@@ -328,6 +355,7 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 	int idx0, idx1, idx2, idx3;
 	double px0, py0, px1, py1, px2, py2, px3, py3;
 	double r, s;
+
 	if (draw_smoke)
 	{
 	
@@ -392,13 +420,14 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 
 				// Draw the smoke at all four vertices, by drawing two triangles
 
-				set_colormap(&*color, value0, *dataset);    glVertex2f(px0, py0);
-				set_colormap(&*color, value1, *dataset);    glVertex2f(px1, py1);
-				set_colormap(&*color, value2, *dataset);    glVertex2f(px2, py2);
+		
+				set_colormap(&*color, value0, *dataset);    glVertex3f(px0, py0, z);
+				set_colormap(&*color, value1, *dataset);    glVertex3f(px1, py1, z);
+				set_colormap(&*color, value2, *dataset);    glVertex3f(px2, py2, z);
 
-				set_colormap(&*color, value0, *dataset);    glVertex2f(px0, py0);
-				set_colormap(&*color, value2, *dataset);    glVertex2f(px2, py2);
-				set_colormap(&*color, value3, *dataset);    glVertex2f(px3, py3);
+				set_colormap(&*color, value0, *dataset);    glVertex3f(px0, py0, z);
+				set_colormap(&*color, value2, *dataset);    glVertex3f(px2, py2, z);
+				set_colormap(&*color, value3, *dataset);    glVertex3f(px3, py3, z);
 
 				
 			}
@@ -505,13 +534,45 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 	
 	//glDisable(GL_LIGHTING);
 	//draw color bar
-	draw_colorbar(color);
+	//draw_colorbar(color);
 	
 	if (draw_streamline == 1) {
 		display_Steamline(&*model_fft, wn, color);
 		//drawCircle(MOUSEx, MOUSEy, 5);
 	}
 
+
+
+
+
+	/*int xi, yi, X, Y; double  dx, dy, len;
+	static int lmx = 0, lmy = 0;				//remembers last mouse location
+
+	xi = yi = 25;
+
+	X = xi; Y = yi;
+
+	if (X > (DIM - 1))  X = DIM - 1; if (Y > (DIM - 1))  Y = DIM - 1;
+	if (X < 0) X = 0; if (Y < 0) Y = 0;
+
+	int mx, my;
+	mx = 672;
+	my = 422;
+	// Add force at the cursor location 
+	my = winHeight - my;
+	dx = mx - lmx; dy = my - lmy;
+	len = sqrt(dx * dx + dy * dy);
+	if (len != 0.0) { dx *= 0.1 / len; dy *= 0.1 / len; }
+	model_fft->fx[Y * DIM + X] += dx;
+	model_fft->fy[Y * DIM + X] += dy;
+	model_fft->rho[Y * DIM + X] = 10.0f;
+	lmx = mx; lmy = my;
+
+
+	/*model_fft->fx[25] += 2;
+	model_fft->fy[25] += 2;
+	model_fft->rho[25] = 20.0f;*/
+	
 }
 
 void View_visualization::bilinear_interpolation(int idx0, int idx1, int idx2, int idx3, double px0, double py0,
@@ -626,7 +687,7 @@ void View_visualization::display_Steamline(Model_fftw* model_fft, int cell_size,
 		CURRENTy = MOUSEy;
 
 		int count = 1;
-
+		
 		while(i < streamline_size && CURRENTx > 0 && CURRENTx < winWidth && CURRENTy > 0 && CURRENTy < winHeight)
 		{
 			//taking the current x and y
@@ -636,8 +697,15 @@ void View_visualization::display_Steamline(Model_fftw* model_fft, int cell_size,
 			compute_velocity(CURRENTx, CURRENTy, &VELOCITYx, &VELOCITYy, &*model_fft, cell_size, cell_size);
 			//normalize velocity
 			magnitude = sqrt((VELOCITYx * VELOCITYx) + (VELOCITYy * VELOCITYy));
+
+			//stop drawing when velocity is zero!
+			if (VELOCITYx == 0 && VELOCITYy == 0) {
+				break;
+			}
+
 			VELOCITYx = VELOCITYx / magnitude;
 			VELOCITYy = VELOCITYy / magnitude;
+
 
 			magnitude *= 100;
 			//color streamline using velocity magnitude
@@ -651,7 +719,7 @@ void View_visualization::display_Steamline(Model_fftw* model_fft, int cell_size,
 			MOUSEy += VELOCITYy*(double)cell_size/2;
 
 
-			if (count) {
+			/*if (count) {
 				printf("----------------------------------------------\n");
 				printf("Current point: %g %g\n", CURRENTx, CURRENTy);
 				printf("Current grid: %d %d\n", GRIDx, GRIDy);
@@ -659,19 +727,18 @@ void View_visualization::display_Steamline(Model_fftw* model_fft, int cell_size,
 				printf("New point: %g %g\n", MOUSEx, MOUSEy);
 				printf("%d\n", cell_size);
 			
-
-			}
+			}*/
 
 			//Updating the X and Y of the next cell and assigning it to GRIDx and GRIDy
 			GRIDx = (int)model_fft->clamp((double)(50 + 1) * ((double)MOUSEx / (double)winWidth));
 			GRIDy = (int)model_fft->clamp((double)(50 + 1) * ((double)(winHeight - MOUSEy) / (double)winHeight));
 
-			if (count) {
+			/*if (count) {
 				printf("New grid: %d %d\n", GRIDx, GRIDy);
 				
 				count = 0;
 
-			}
+			}*/
 			
 			//Draw Circle at the new center
 			//drawCircle(MOUSEx, MOUSEy, 5);

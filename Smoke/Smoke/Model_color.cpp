@@ -99,6 +99,8 @@ void Model_color::heatmap(float value, float* R, float* G, float* B)
 	g2 = 0;
 	b2 = 0;
 
+	
+
 	float mid = (max + min) / 2;
 
 	if (value <= mid) {
@@ -108,14 +110,19 @@ void Model_color::heatmap(float value, float* R, float* G, float* B)
 		//interpolate between black and orange
 		interpolate(value * 2, R, G, B, r1, g1, b1, r2, g2, b2);
 	}
-	else {
+	else if (value > mid && value < 0.9 * max) {
 		//yellow
 		r1 = g1 = 1;
 		b1 = 0.1*value;
 		//interpolate between orange and yellow
-		interpolate((value - 0.5) * 2, R, G, B, r2, g2, b2, r1, g1, b1);
+		interpolate((value - 0.5) * 1.5, R, G, B, r2, g2, b2, r1, g1, b1);
 	}
-
+	else {
+		r1 = g1 = 1;
+		b1 = 0.1*value;
+		r2 = g2 = b2 = 1;
+		interpolate((value - (0.9 * max)) * 10, R, G, B, r1, g1, b1, r2, g2, b2);
+	}
 
 }
 

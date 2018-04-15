@@ -1,10 +1,4 @@
-﻿  View_visualization.cpp
-c:\users\paul\desktop\ai\blockc\scientificvisualization\sciviz\smoke\smoke\view_visualization.cpp(102): warning C4101: 'f': unreferenced local variable
-c:\users\paul\desktop\ai\blockc\scientificvisualization\sciviz\smoke\smoke\view_visualization.cpp(282): warning C4101: 'left_x': unreferenced local variable
-c:\users\paul\desktop\ai\blockc\scientificvisualization\sciviz\smoke\smoke\view_visualization.cpp(282): warning C4101: 'right_y': unreferenced local variable
-c:\users\paul\desktop\ai\blockc\scientificvisualization\sciviz\smoke\smoke\view_visualization.cpp(282): warning C4101: 'right_x': unreferenced local variable
-c:\users\paul\desktop\ai\blockc\scientificvisualization\sciviz\smoke\smoke\view_visualization.cpp(273): warning C4101: 'angle': unreferenced local variable
-c:\users\paul\desktop\ai\blockc\scientificvisualization\sciviz\smoke\smoke\view_visualization.cpp(282): warning C4101: 'left_y': unreferenced local variable
+﻿  fluids.cpp
 Controller_keyboard.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/SAFESEH' specification
 glui32.lib(algebra3.obj) : warning LNK4099: PDB 'GLUI.pdb' was not found with 'glui32.lib(algebra3.obj)' or at 'C:\Users\Paul\Desktop\AI\BlockC\ScientificVisualization\SciViz\Smoke\Debug\GLUI.pdb'; linking object as if no debug info
 glui32.lib(arcball.obj) : warning LNK4099: PDB 'GLUI.pdb' was not found with 'glui32.lib(arcball.obj)' or at 'C:\Users\Paul\Desktop\AI\BlockC\ScientificVisualization\SciViz\Smoke\Debug\GLUI.pdb'; linking object as if no debug info

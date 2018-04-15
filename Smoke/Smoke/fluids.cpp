@@ -12,6 +12,10 @@
 #include "controller_viewInteraction.h"
 #include <GL/glui.h>
 #include "wtypes.h"
+#define _USE_MATH_DEFINES
+#include <math.h>
+#include <queue>
+using std::queue;
 
 
 const int DIM = 50;				//size of simulation grid
@@ -34,6 +38,8 @@ int dataset_vector = VECTOR_VELOCITY;
 
 int frozen = 0;					   //toggles on/off the animation
 
+//int horizontal, vertical;
+
 Model_fftw model_fft;
 Model_color color;
 View_visualization view;
@@ -42,6 +48,12 @@ controller_viewInteraction interaction;
 
 int main_window = 1;
 GLUI* control_window;
+
+//slice parameters
+queue<Model_fftw> modelQueue;
+
+float slice_size = 10;
+
 
 //do_one_simulation_step: Do one complete cycle of the simulation:
 //      - set_forces:       
@@ -60,24 +72,62 @@ void do_one_simulation_step(void)
 		model_fft.diffuse_matter(DIM);
 		glutPostRedisplay();
 	}
+	if (view.draw_slices) {
+		if (modelQueue.size() <= slice_size - 1) {
+			modelQueue.push(model_fft);
+		}
+		else {
+			modelQueue.pop();
+			//modelQueue.push(model_fft);
+		}
+	}
 }
 
 void visualize(void)
 {
-		view.visualize( DIM, &model_fft, &color,&DENSITY, &VELOCITY, &FORCE, &dataset,
-		&SCALAR_DENSITY, &SCALAR_VELOCITY, &SCALAR_FORCE, &dataset_scalar,
-		&VECTOR_VELOCITY, &VECTOR_FORCE, &dataset_vector);
+	if (view.draw_slices) {
+
+		float z, zstep, alpha, alphastep;
+		z = -3;
+		zstep = 0.5 / slice_size;
+		alpha = 0.7;
+		alphastep = 0.6 / slice_size;
+		// create a temporary copy of the queue
+		int size = modelQueue.size();
+		queue<Model_fftw> queueCopy;
+
+
+		for (int i = 0; i < size; i++) {
+			// add model to copy
+			queueCopy.push(modelQueue.front());
+			modelQueue.pop();
+		}
+
+		// visualize all the slices
+		for (int i = 0; i < size; i++) {
+
+			z = z + ((i * zstep));
+			alpha = alpha - (i * alphastep);
+
+			view.visualize(DIM, &queueCopy.front(), &color, &DENSITY, &VELOCITY, &FORCE, &dataset,
+				&SCALAR_DENSITY, &SCALAR_VELOCITY, &SCALAR_FORCE, &dataset_scalar,
+				&VECTOR_VELOCITY, &VECTOR_FORCE, &dataset_vector, z, alpha);
+
+
+			modelQueue.push(queueCopy.front());
+			queueCopy.pop();
+		}
+		
+	}
+	else {
+		view.visualize(DIM, &model_fft, &color, &DENSITY, &VELOCITY, &FORCE, &dataset,
+			&SCALAR_DENSITY, &SCALAR_VELOCITY, &SCALAR_FORCE, &dataset_scalar,
+			&VECTOR_VELOCITY, &VECTOR_FORCE, &dataset_vector, -1, 1.0);
+	}
+
+
 }
 
-void display()
-{
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	visualize();
-	glFlush();
-	glutSwapBuffers();
-}
 //reshape: Handle window resizing (reshaping) events
 void reshape(int w, int h)
 {
@@ -85,7 +135,6 @@ void reshape(int w, int h)
 }
 void keyboardFunction(unsigned char key, int x, int y) {
 	keyboard.keyboard(&view,key,&color,&model_fft,  &frozen,&dataset,&VELOCITY);
-	
 }
 void drag(int mx, int my) {
 	interaction.drag(&view,&model_fft, DIM, &mx, &my);
@@ -114,6 +163,37 @@ void GetDesktopResolution(int* horizontal, int* vertical)
 }
 
 
+void display()
+{
+	int horizontal, vertical;
+	GetDesktopResolution(&horizontal, &vertical);
+	
+	//gluOrtho2D(0.0, (GLdouble)(horizontal), 0.0, (GLdouble)(vertical));
+	/*
+	glViewport(0.0f, 0.0f, (GLfloat)(horizontal), (GLfloat)(vertical));
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	//gluPerspective(M_PI / 2, 1.0, 1, 1000);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	gluLookAt(0, 0, 0, 0, 0, -1, 0, 1, 0);
+	
+	visualize();
+	glFlush();
+	glutSwapBuffers();*/
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glViewport(0.0f, 0.0f, (GLfloat)(horizontal), (GLfloat)(vertical));
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	visualize();
+	glFlush();
+	glutSwapBuffers();
+
+}
 
 int main(int argc, char **argv)
 {
@@ -123,6 +203,8 @@ int main(int argc, char **argv)
 	view = View_visualization();
 	keyboard = Controller_keyboard();
 	interaction = controller_viewInteraction();
+
+
 
 	// Initialize the main visualization window
 	glutInit(&argc, argv);
@@ -154,7 +236,7 @@ int main(int argc, char **argv)
 	
 
 	//--------------define all options for the COLORMAPPING assignment---------------------------//
-	GLUI_Rollout* color_rollout = control_window->add_rollout("Colors", true);
+	GLUI_Rollout* color_rollout = control_window->add_rollout("Colors", false);
 
 		control_window->add_checkbox_to_panel(color_rollout, "Draw smoke", &view.draw_smoke);
 		control_window->add_checkbox_to_panel(color_rollout, "Clamp", &view.use_clamp);
@@ -199,7 +281,7 @@ int main(int argc, char **argv)
 			control_window->add_checkbox_to_panel(glyph_rollout, "Draw glyphs", &view.draw_vecs);
 			control_window->add_checkbox_to_panel(glyph_rollout, "Color glyphs", &view.color_dir);
 
-			GLUI_Panel* field_panel = control_window->add_panel_to_panel(glyph_rollout, "Glyph field");
+			GLUI_Panel* field_panel = control_window->add_panel_to_panel(glyph_rollout, "Vector field");
 			GLUI_Panel* type_panel = control_window->add_panel_to_panel(glyph_rollout, "Glyph type");
 			GLUI_Panel* scalar_panel = control_window->add_panel_to_panel(glyph_rollout, "Scalar dataset");
 			GLUI_Panel* vector_panel = control_window->add_panel_to_panel(glyph_rollout, "Vector dataset");
@@ -233,6 +315,44 @@ int main(int argc, char **argv)
 			GLUI_Rollout* streamline_rollout = control_window->add_rollout("Streamline", true);
 			control_window->add_checkbox_to_panel(streamline_rollout, "Draw streamline", &view.draw_streamline);
 			
+	//--------------define the slices options--------------------------------------------------//
+			GLUI_Rollout* slices_rollout = control_window->add_rollout("Slices", true);
+			control_window->add_checkbox_to_panel(slices_rollout, "Draw slices", &view.draw_slices);
+
+			//--------------viewpoint options--------------------------------------------------//
+			GLUI_Rollout* view_rollout = control_window->add_rollout("Viewpoint", true);
+
+			GLUI_Spinner* ex = control_window->add_spinner_to_panel(view_rollout, "ex", GLUI_SPINNER_FLOAT, &view.ex);
+			ex->set_speed(0.2);
+
+			GLUI_Spinner* ey = control_window->add_spinner_to_panel(view_rollout, "ey", GLUI_SPINNER_FLOAT, &view.ey);
+			ey->set_speed(0.2);
+
+			GLUI_Spinner* ez = control_window->add_spinner_to_panel(view_rollout, "ez", GLUI_SPINNER_FLOAT, &view.ez);
+			ez->set_speed(0.2);
+
+			GLUI_Spinner* cx = control_window->add_spinner_to_panel(view_rollout, "cx", GLUI_SPINNER_FLOAT, &view.cx);
+			cx->set_speed(0.2);
+
+			GLUI_Spinner* cy = control_window->add_spinner_to_panel(view_rollout, "cy", GLUI_SPINNER_FLOAT, &view.cy);
+			cy->set_speed(0.2);
+
+			GLUI_Spinner* cz = control_window->add_spinner_to_panel(view_rollout, "cz", GLUI_SPINNER_FLOAT, &view.cz);
+			cz->set_speed(0.2);
+			
+
+			GLUI_Spinner* ux = control_window->add_spinner_to_panel(view_rollout, "ux", GLUI_SPINNER_FLOAT, &view.ux);
+			ux->set_speed(2);
+
+			GLUI_Spinner* uy = control_window->add_spinner_to_panel(view_rollout, "uy", GLUI_SPINNER_FLOAT, &view.uy);
+			uy->set_speed(2);
+
+			GLUI_Spinner* uz = control_window->add_spinner_to_panel(view_rollout, "uz", GLUI_SPINNER_FLOAT, &view.uz);
+			uz->set_speed(2);
+
+
+		
+
 	
 	glutMainLoop();			//calls do_one_simulation_step, keyboard, display, drag, reshape
 	return 0;
