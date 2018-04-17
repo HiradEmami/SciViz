@@ -73,6 +73,9 @@ public:
 	float ex, ey, ez, cx, cy, cz, ux, uy, uz;
 	float alpha;
 	float z;
+
+	//clamp_scale
+	int bool_clamp_scale; //0 if clamp, 1 if scale
 	
 	
 

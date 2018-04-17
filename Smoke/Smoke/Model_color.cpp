@@ -67,6 +67,10 @@ float Model_color::clamp(float value) {
 	if (value<min) value = min; if (value>max) value = max;
 	return value;
 }
+float Model_color::scale(float value) {
+	value = (NCOLORS + 1)*(value - min) / (max - min);
+	return value;
+}
 
 void Model_color::interpolate(float value, float* R, float* G, float* B, float r1, float g1, float b1, float r2, float g2, float b2)
 {

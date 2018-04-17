@@ -53,6 +53,8 @@ View_visualization::View_visualization()
 	 ex = 0;  ey = 0;  ez = 0;
 	 cx = 0;  cy = 0;  cz = -1;
 	 ux = 0;  uy = 1;  uz = 0;
+	 //clamp_scale
+	 bool_clamp_scale = 0;
 	 
 	
 }
@@ -74,8 +76,11 @@ void View_visualization::set_colormap(Model_color* color, float vy, int dataset)
 	//color->density_max = color->vel_max;
 	//color->density_min = color->vel_min;
 
-	if (use_clamp) {
+	if (bool_clamp_scale ==0) {
 		vy = color->clamp(vy);
+	}
+	else {
+		vy = color->scale(vy);
 	}
 	vy *= color->NCOLORS; vy = (int)vy; vy /= color->NCOLORS;
 	float R, G, B;
@@ -105,7 +110,13 @@ void View_visualization::set_colormap(Model_color* color, float vy, int dataset)
 //the selected scalar dataset and colormap                    
 void View_visualization::direction_to_color(float scalar, int colormap, Model_color color)
 {
-	scalar = color.clamp(scalar);
+	//scalar = color.clamp(scalar);
+	if (bool_clamp_scale == 0) {
+		scalar = color.clamp(scalar);
+	}
+	else {
+		scalar = color.scale(scalar);
+	}
 	float r, g, b, f;
 	if (color_dir) {
 		if (colormap == COLOR_BLACKWHITE)
@@ -135,7 +146,13 @@ void View_visualization::direction_to_color(float scalar, int colormap, Model_co
 }
 //compute the rgb values given the current segment and the current colormap
 void View_visualization::compute_RGB(Model_color* color,float value, float* R, float* G, float* B) {
-	value = color->clamp(value);
+	//value = color->clamp(value);
+	if (bool_clamp_scale == 0) {
+		value = color->clamp(value);
+	}
+	else {
+		value = color->scale(value);
+	}
 	switch (scalar_col) {
 	case 0:
 		color->blackwhite(value, R, G, B);
@@ -439,9 +456,9 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 	float x, y, scalar, magnitude;
 	if (draw_vecs)
 	{
-		for (j = 0; j < glyph_samplesY; j += 1)
+		for (j = 0; j < glyph_samplesY; j += 50/glyph_samplesY)
 		{
-			for (i = 0; i < glyph_samplesX; i += 1)
+			for (i = 0; i < glyph_samplesX; i += 50 / glyph_samplesX)
 			{
 				idx = (j * DIM) + i;
 				// choose scalar for coloring 
@@ -534,7 +551,7 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 	
 	//glDisable(GL_LIGHTING);
 	//draw color bar
-	//draw_colorbar(color);
+	draw_colorbar(color);
 	
 	if (draw_streamline == 1) {
 		display_Steamline(&*model_fft, wn, color);
