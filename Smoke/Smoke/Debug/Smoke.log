@@ -1,2 +1,6 @@
-﻿Controller_keyboard.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/SAFESEH' specification
+﻿  fluids.cpp
+c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\fluids.cpp(77): warning C4018: '<=': signed/unsigned mismatch
+  Model_color.cpp
+  Generating Code...
+Controller_keyboard.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/SAFESEH' specification
   Smoke.vcxproj -> C:\Users\Hirad Gorgoroth\Documents\GitHub\SciViz\Smoke\Debug\Smoke.exe

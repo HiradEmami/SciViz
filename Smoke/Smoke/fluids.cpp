@@ -278,7 +278,7 @@ int main(int argc, char **argv)
 
 		GLUI_Rollout* color_options_rollout = control_window->add_rollout_to_panel(color_rollout, "Color options", true);
 		GLUI_Spinner* N_color_spinner = control_window->add_spinner_to_panel(color_options_rollout, "Colorbands", GLUI_SPINNER_INT, &color.NCOLORS);
-		N_color_spinner->set_float_limits(2,255);
+		N_color_spinner->set_float_limits(1,255);
 		/*GLUI_RadioGroup* scale_clamp = control_window->add_radiogroup_to_panel(color_rollout, &view.bool_clamp_scale);
 		control_window->add_radiobutton_to_group(scale_clamp, "Use Scaling");
 		control_window->add_radiobutton_to_group(scale_clamp, "Use Clamping");*/

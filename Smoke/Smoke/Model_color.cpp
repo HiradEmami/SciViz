@@ -96,7 +96,6 @@ void Model_color::rainbow(float value, float* R, float* G, float* B)
 }
 void Model_color::grayscale(float value, float* R, float* G, float* B)
 {
-	value = value / 3;
 	*R = *G = *B = value;
 }
 
@@ -147,7 +146,8 @@ void Model_color::heatmap(float value, float* R, float* G, float* B)
 
 void Model_color::blackwhite(float value, float* R, float* G, float* B)
 {
-	*R = *G = *B = value;
+	interpolate(value, &*R, &*G, &*B, 0, 0, 0, 1, 1, 1);
+	NCOLORS = 1;
 }
 
 
