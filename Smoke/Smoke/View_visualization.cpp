@@ -40,6 +40,8 @@ View_visualization::View_visualization(float width, float height)
 	 LINES = 0;
 	 CONES = 1;
 	 ARROWS = 2;
+	 random_sampling = 1;
+	 randomly_sampled = 0;
 
 	 //draw normal vector glyphs or gradient glyphs
 	 vector_type = 0;
@@ -65,7 +67,7 @@ View_visualization::View_visualization(float width, float height)
 
 	 //slices parameters
 	 draw_slices = 0;
-	 ex = 0;  ey = 0;  ez = 0;
+	 ex = 0.0002;  ey = 0;  ez = 0;
 	 cx = 0;  cy = 0;  cz = -1;
 	 ux = 0;  uy = 1;  uz = 0;
 	 //clamp_scale
@@ -125,6 +127,13 @@ void View_visualization::set_colormap(Model_color* color, float vy, int dataset)
 //the selected scalar dataset and colormap                    
 void View_visualization::direction_to_color(float scalar, int colormap, Model_color color)
 {
+
+	if (use_clamp) {
+		scalar = color.clamp(scalar);
+	}
+	else {
+		scalar = color.scale(scalar, data_min, data_max);
+	}
 
 	float r, g, b, f;
 	if (color_dir) {
@@ -347,6 +356,26 @@ void View_visualization::draw_arrows(float x, float y, fftw_real  wn, fftw_real 
 		tip_y = -1 * max_length_y;
 		base_scaling /= 2;
 	}
+
+	/*if (abs(tip_x) < wn/2) {
+		if (tip_x <= 0) {
+			tip_x = -wn / 2;
+		}
+		else {
+			tip_x = wn / 2;
+		}
+	}
+
+	if (abs(tip_y) < hn / 2) {
+		if (tip_y <= 0) {
+			tip_y = -hn / 2;
+			base_scaling *= 1.2;
+		}
+		else {
+			tip_y = hn / 2;
+			base_scaling *= 1.2;
+		}
+	}*/
 
 
 	base_x = base_scaling * x;
@@ -624,10 +653,14 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 				magnitude *= 10;
 
 
-				//standard glyph position
 				float posx, posy;
+
+
+				//standard, uniform glyph sampling
 				posx = wn + (fftw_real)i * wn;
 				posy = hn + (fftw_real)j * hn;
+				
+
 			
 				// find grid cell that current glyph falls into
 				float gridx = (int)model_fft->clamp((double)(DIM + 1) * ((double)posx / (double)winWidth));

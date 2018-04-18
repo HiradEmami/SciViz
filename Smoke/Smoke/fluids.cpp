@@ -52,8 +52,10 @@ GLUI* control_window;
 //slice parameters
 queue<Model_fftw> modelQueue;
 
-int slice_size = 20;
+int slice_size = 6;
 int timer = 0;
+
+float alpha = 0.5f; 
 
 
 //do_one_simulation_step: Do one complete cycle of the simulation:
@@ -94,11 +96,10 @@ void do_one_simulation_step(void)
 void visualize(void)
 {
 	if (view.draw_slices ) {
-		float z, zstep, alpha, alphastep, shift;
+		float z, zstep, alphastep, shift;
 		z = -3;
 		zstep = 0.5 / slice_size;
-		alpha = 1.0;
-		alphastep = 0.9 / slice_size;
+		alphastep = (alpha - 0.05) / slice_size;
 		// create a temporary copy of the queue
 		int size = modelQueue.size();
 		queue<Model_fftw> queueCopy;
@@ -345,6 +346,12 @@ int main(int argc, char **argv)
 			control_window->add_checkbox_to_panel(slices_rollout, "Draw slices", &view.draw_slices);
 			GLUI_Spinner* n_slices = control_window->add_spinner_to_panel(slices_rollout, "N slices", GLUI_SPINNER_INT, &slice_size);
 			n_slices->set_int_limits(1, 50);
+
+			GLUI_Spinner* alpha_slider = control_window->add_spinner_to_panel(slices_rollout, "Transparency", GLUI_SPINNER_FLOAT, &alpha);
+			alpha_slider->set_float_limits(0.1, 1);
+			alpha_slider->set_speed(1);
+
+			
 		
 
 			//--------------viewpoint options--------------------------------------------------//
@@ -359,7 +366,7 @@ int main(int argc, char **argv)
 			GLUI_Spinner* ez = control_window->add_spinner_to_panel(view_rollout, "ez", GLUI_SPINNER_FLOAT, &view.ez);
 			ez->set_speed(0.2);
 
-			GLUI_Spinner* cx = control_window->add_spinner_to_panel(view_rollout, "cx", GLUI_SPINNER_FLOAT, &view.cx);
+			/*GLUI_Spinner* cx = control_window->add_spinner_to_panel(view_rollout, "cx", GLUI_SPINNER_FLOAT, &view.cx);
 			cx->set_speed(0.2);
 
 			GLUI_Spinner* cy = control_window->add_spinner_to_panel(view_rollout, "cy", GLUI_SPINNER_FLOAT, &view.cy);
@@ -376,7 +383,7 @@ int main(int argc, char **argv)
 			uy->set_speed(2);
 
 			GLUI_Spinner* uz = control_window->add_spinner_to_panel(view_rollout, "uz", GLUI_SPINNER_FLOAT, &view.uz);
-			uz->set_speed(2);
+			uz->set_speed(2);*/
 
 
 		

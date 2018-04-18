@@ -34,6 +34,7 @@ public:
 	void visualize(int DIM, Model_fftw* model_fft, Model_color* color, int* DENSITY, int* VELOCITY, int* FORCE, int* dataset,
 		int* SCALAR_DENSITY, int* SCALAR_VELOCITY, int* SCALAR_FORCE, int* dataset_scalar,
 		float slicedepth, float a, float shift);
+
 	//parameters
 	int DIM;				//size of simulation grid
 	int   winWidth, winHeight;  //size of the graphics window, in pixels
@@ -67,6 +68,8 @@ public:
 	int FORCE_FIELD = 1;
 	int DENSITY_GRADIENT_FIELD = 2;
 	int VELOCITY_GRADIENT_FIELD = 3;
+	int random_sampling;
+	int randomly_sampled;
 
 
 	//Streamline parameters
