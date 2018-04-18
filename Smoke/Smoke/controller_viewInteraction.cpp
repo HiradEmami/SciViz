@@ -47,6 +47,7 @@ void controller_viewInteraction::reshape(View_visualization* view,int* w, int* h
 
 
 
+
 	/*glViewport(0.0f, 0.0f, (GLfloat)*w, (GLfloat)*h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();

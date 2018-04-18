@@ -9,8 +9,15 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-View_visualization::View_visualization()
+View_visualization::View_visualization() {
+
+}
+
+View_visualization::View_visualization(float width, float height)
 {
+	winWidth = width;
+	winHeight = height;
+
 	 DIM = 50;
 	 color_dir = 0;            //use direction color-coding or not
 	 vec_scale = 1000;			//scaling of hedgehogs
@@ -62,7 +69,7 @@ View_visualization::View_visualization()
 	 cx = 0;  cy = 0;  cz = -1;
 	 ux = 0;  uy = 1;  uz = 0;
 	 //clamp_scale
-	 bool_clamp_scale = 0;
+	 //bool_clamp_scale = 0;
 	 
 	
 }
@@ -84,11 +91,10 @@ void View_visualization::set_colormap(Model_color* color, float vy, int dataset)
 	//color->density_max = color->vel_max;
 	//color->density_min = color->vel_min;
 
-	if (bool_clamp_scale ==0) {
+	if (use_clamp) {
 		vy = color->clamp(vy);
 	}
 	else {
-		//printf("%g %g\n", data_min, data_max);
 		vy = color->scale(vy, data_min, data_max);
 	}
 	vy *= color->NCOLORS; vy = (int)vy; vy /= color->NCOLORS;
@@ -312,31 +318,33 @@ void View_visualization::rotate(float x, float y, float* newx, float* newy, floa
 
 void View_visualization::draw_arrows(float x, float y, fftw_real  wn, fftw_real hn, float i, float j, float magnitude) {
 	
-	float base_scaling = 300;
+	float base_scaling = 200;
 	//glPushMatrix();
 	//zglTranslatef(0, 400.0f, 0);
 	
 	float base_x, base_y, tip_x, tip_y;
-	
+
+	float max_length_x = wn * 1.5;
+	float max_length_y = hn * 1.5;
 	
 	tip_x = vec_scale * x;
 	tip_y = vec_scale * y;
 
-	if (tip_x > wn) {
-		tip_x = wn;
+	if (tip_x > max_length_x) {
+		tip_x = max_length_x;
 		base_scaling /= 2;
 	}
-	if (tip_x < -1 * wn) {
-		tip_x = -1 * wn;
+	if (tip_x < -1 * max_length_x) {
+		tip_x = -1 * max_length_x;
 		base_scaling /= 2;
 	}
 
-	if (tip_y > hn) {
-		tip_y = hn;
+	if (tip_y > max_length_y) {
+		tip_y = max_length_y;
 		base_scaling /= 2;
 	}
-	if (tip_y < -1 * hn) {
-		tip_y = -1 * hn;
+	if (tip_y < -1 * max_length_y) {
+		tip_y = -1 * max_length_y;
 		base_scaling /= 2;
 	}
 
@@ -536,9 +544,9 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 	float scalar, magnitude;
 	if (draw_vecs)
 	{
-		for (j = 0; j < glyph_samplesY; j += 50/glyph_samplesY)
+		for (j = 0; j < glyph_samplesY; j += 1)
 		{
-			for (i = 0; i < glyph_samplesX; i += 50 / glyph_samplesX)
+			for (i = 0; i < glyph_samplesX; i += 1)
 			{
 				idx = (j * DIM) + i;
 				// choose scalar for coloring 

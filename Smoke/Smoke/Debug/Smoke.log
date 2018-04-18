@@ -1,7 +1,4 @@
-﻿  fluids.cpp
-c:\users\paul\desktop\ai\blockc\scientificvisualization\sciviz\smoke\smoke\fluids.cpp(77): warning C4018: '<=': signed/unsigned mismatch
-c:\users\paul\desktop\ai\blockc\scientificvisualization\sciviz\smoke\smoke\fluids.cpp(222): warning C4101: 'vertical': unreferenced local variable
-c:\users\paul\desktop\ai\blockc\scientificvisualization\sciviz\smoke\smoke\fluids.cpp(222): warning C4101: 'horizontal': unreferenced local variable
+﻿  Model_color.cpp
 Controller_keyboard.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/SAFESEH' specification
 glui32.lib(algebra3.obj) : warning LNK4099: PDB 'GLUI.pdb' was not found with 'glui32.lib(algebra3.obj)' or at 'C:\Users\Paul\Desktop\AI\BlockC\ScientificVisualization\SciViz\Smoke\Debug\GLUI.pdb'; linking object as if no debug info
 glui32.lib(arcball.obj) : warning LNK4099: PDB 'GLUI.pdb' was not found with 'glui32.lib(arcball.obj)' or at 'C:\Users\Paul\Desktop\AI\BlockC\ScientificVisualization\SciViz\Smoke\Debug\GLUI.pdb'; linking object as if no debug info

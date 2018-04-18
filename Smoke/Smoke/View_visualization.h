@@ -10,8 +10,8 @@
 class View_visualization
 {
 public:
-	View_visualization();
-
+	View_visualization(float width, float height);
+	View_visualization::View_visualization();
 	void draw_number(Model_color* color, std::string value, float position, float height);
 	void draw_colorbar(Model_color* color);
 	void compute_RGB(Model_color* color,float value, float* R, float* G, float* B);

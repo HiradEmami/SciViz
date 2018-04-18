@@ -67,10 +67,10 @@ float Model_color::clamp(float value) {
 	if (value<min) value = min; if (value>max) value = max;
 	return value;
 }
-float Model_color::scale(float value) {
+/*float Model_color::scale(float value) {
 	value = (NCOLORS + 1)*(value - min) / (max - min);
 	return value;
-}
+}*/
 
 float Model_color::scale(float value, float min, float max) {
 	if (value<min) value = min; if (value>max) value = max;
@@ -87,6 +87,7 @@ void Model_color::interpolate(float value, float* R, float* G, float* B, float r
 //rainbow: Implements a color palette, mapping the scalar 'value' to a rainbow color RGB
 void Model_color::rainbow(float value, float* R, float* G, float* B)
 {
+
 	const float dx = 0.8;
 	value = (6 - 2 * dx)*value + dx;
 	*R = fmax(0.0, (3 - fabs(value - 4) - fabs(value - 5)));

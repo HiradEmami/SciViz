@@ -207,10 +207,13 @@ void display()
 
 int main(int argc, char **argv)
 {
+	float winWidth, winHeight;
+	winWidth = 1000;
+	winHeight = 800;
 	// Initialize models, view and controller
 	model_fft = Model_fftw();
 	color = Model_color();
-	view = View_visualization();
+	view = View_visualization(winWidth, winHeight);
 	keyboard = Controller_keyboard();
 	interaction = controller_viewInteraction();
 
@@ -219,10 +222,10 @@ int main(int argc, char **argv)
 	// Initialize the main visualization window
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-	int horizontal, vertical;
+	//int horizontal, vertical;
 	//GetDesktopResolution(&horizontal, &vertical);
 	//glutInitWindowSize(horizontal, vertical);
-	glutInitWindowSize(1000, 800);
+	glutInitWindowSize(winWidth, winHeight);
 
 	main_window = glutCreateWindow("Real-time smoke simulation and visualization");
 	GLUI_Master.set_glutDisplayFunc(display);
