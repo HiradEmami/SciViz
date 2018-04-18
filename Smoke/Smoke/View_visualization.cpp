@@ -36,8 +36,12 @@ View_visualization::View_visualization()
 
 	 //draw normal vector glyphs or gradient glyphs
 	 vector_type = 0;
-	 STANDARD = 0;
-	 GRADIENT = 1;
+	 VELOCITY_FIELD = 0;
+	 FORCE_FIELD = 1;
+	 DENSITY_GRADIENT_FIELD = 2;
+	 VELOCITY_GRADIENT_FIELD = 3;
+	 
+
 
 	 glyph_samplesX = 50;
 	 glyph_samplesY = 50;
@@ -277,7 +281,7 @@ void View_visualization::draw_cones(float x, float y, fftw_real  wn, fftw_real h
 	
 	float angle;
 	// define the radius to be half of the cell width
-	float radius = wn / 2;
+	float radius = wn;
 	glPushMatrix();
 	// Translate glyph to middle of current cell
 	glTranslatef(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn, z);
@@ -288,7 +292,7 @@ void View_visualization::draw_cones(float x, float y, fftw_real  wn, fftw_real h
 	glRotatef(90 - angle, 0.0, 0.0, -1.0);
 	glRotatef(-90.0, 1.0, 0.0, 0.0);
 	// Draw the solid cones with specified radius
-	glutSolidCone(radius / 2, (radius / 2) + (radius / 2 * magnitude), 3, 3);
+	glutSolidCone(radius, radius, 30, 3);
 	glPopMatrix();
 }
 
@@ -319,17 +323,6 @@ void View_visualization::draw_arrows(float x, float y, fftw_real  wn, fftw_real 
 	tip_x = vec_scale * x;
 	tip_y = vec_scale * y;
 
-	
-
-
-	//if (tip_x > wn) tip_x = wn;
-	//if (tip_y > hn) tip_y = hn;
-
-
-	//if (tip_x < wn/2) tip_x = wn/2;
-	//if (tip_y < hn/2) tip_y = hn/2;
-	//printf("x: %g y: %g\n", tip_x, tip_y);
-
 
 	glBegin(GL_TRIANGLES);
 		glVertex3f(i - base_x, j + base_y, z);
@@ -344,16 +337,16 @@ void View_visualization::draw_arrows(float x, float y, fftw_real  wn, fftw_real 
 
 void View_visualization::draw_hedgehogs(float x, float y, fftw_real  wn, fftw_real hn, float i, float j, float magnitude) {
 	// use x and y to draw corresponding direction of vector
-	glBegin(GL_LINE);
+	glBegin(GL_LINES);
 	glVertex3f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn, z);
-	glVertex3f((wn + (fftw_real)i * wn) + vec_scale * x, (hn + (fftw_real)j * hn) + vec_scale * y, z);
+	glVertex3f((wn + (fftw_real)i * wn) + (vec_scale * x), (hn + (fftw_real)j * hn) + (vec_scale * y), z);
 	glEnd();
 }
 
 
 void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* color,int* DENSITY, int* VELOCITY, int* FORCE, int* dataset,
 	int* SCALAR_DENSITY, int* SCALAR_VELOCITY, int* SCALAR_FORCE, int* dataset_scalar,
-	int* VECTOR_VELOCITY, int* VECTOR_FORCE,int* dataset_vector, float slicedepth, float a, float shift)
+	float slicedepth, float a, float shift)
 
 {
 	alpha = a;
@@ -538,61 +531,62 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 				}
 
 
-				if (vector_type == STANDARD) {
-					//X and Y values depend on chosen dataset vector
-					if (*dataset_vector == *VECTOR_VELOCITY) {
+				idx0 = (j * DIM) + i;
+				idx1 = ((j + 1) * DIM) + i;
+				idx2 = ((j + 1) * DIM) + (i + 1);
+				idx3 = (j * DIM) + (i + 1);
+
+				px0 = wn + (fftw_real)i * wn;
+				py0 = hn + (fftw_real)j * hn;
+
+
+				px1 = wn + (fftw_real)i * wn;
+				py1 = hn + (fftw_real)(j + 1) * hn;
+
+
+				px2 = wn + (fftw_real)(i + 1) * wn;
+				py2 = hn + (fftw_real)(j + 1) * hn;
+
+
+				px3 = wn + (fftw_real)(i + 1) * wn;
+				py3 = hn + (fftw_real)j * hn;
+
+				get_reference_coordinates(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn, px0, py0,
+					px1, py1, px3, py3, &r, &s);
+
+
+
+				if (vector_type == VELOCITY_FIELD) {
 						x = model_fft->vx[idx];
 						y = model_fft->vy[idx];
-					}
-					else if (*dataset_vector == *VECTOR_FORCE) {
-						x = model_fft->fx[idx];
-						y = model_fft->fy[idx];
-					}
-
-					
 				}
 
+				else if (vector_type == FORCE_FIELD) {
+					x = model_fft->fx[idx];
+					y = model_fft->fy[idx];
+				}
+		
+
 				// draw the gradient of either density or velocity magnitude
-				else if (vector_type == GRADIENT) {
+				else if (vector_type == DENSITY_GRADIENT_FIELD) {
 
-					idx0 = (j * DIM) + i;
-					idx1 = ((j + 1) * DIM) + i;
-					idx2 = ((j + 1) * DIM) + (i + 1);
-					idx3 = (j * DIM) + (i + 1);
-
-					px0 = wn + (fftw_real)i * wn;
-					py0 = hn + (fftw_real)j * hn;
-
-
-					px1 = wn + (fftw_real)i * wn;
-					py1 = hn + (fftw_real)(j + 1) * hn;
-
-
-					px2 = wn + (fftw_real)(i + 1) * wn;
-					py2 = hn + (fftw_real)(j + 1) * hn;
-
-
-					px3 = wn + (fftw_real)(i + 1) * wn;
-					py3 = hn + (fftw_real)j * hn;
-
-					get_reference_coordinates(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn, px0, py0,
-						px1, py1, px3, py3, &r, &s);
-
+					y = (1 - s)*((model_fft->rho[idx1] - model_fft->rho[idx0]) / wn) + s * ((model_fft->rho[idx2] - model_fft->rho[idx3]) / wn);
+					x = (1 - r)*((model_fft->rho[idx3] - model_fft->rho[idx0]) / hn) + r * ((model_fft->rho[idx2] - model_fft->rho[idx1]) / hn);		
+				}
+				else if (vector_type == VELOCITY_GRADIENT_FIELD) {
 
 					value0 = sqrt((model_fft->vx[idx0] * model_fft->vx[idx0]) + (model_fft->vy[idx0] * model_fft->vy[idx0]));
 					value1 = sqrt((model_fft->vx[idx1] * model_fft->vx[idx1]) + (model_fft->vy[idx1] * model_fft->vy[idx1]));
 					value2 = sqrt((model_fft->vx[idx2] * model_fft->vx[idx2]) + (model_fft->vy[idx2] * model_fft->vy[idx2]));
 					value3 = sqrt((model_fft->vx[idx3] * model_fft->vx[idx3]) + (model_fft->vy[idx3] * model_fft->vy[idx3]));
 
-					y = (1 - s)*((model_fft->rho[idx1] - model_fft->rho[idx0]) / wn) + s * ((model_fft->rho[idx2] - model_fft->rho[idx3]) / wn);
-					x = (1 - r)*((model_fft->rho[idx3] - model_fft->rho[idx0]) / hn) + r * ((model_fft->rho[idx2] - model_fft->rho[idx1]) / hn);
+					y = (1 - s)*((value1 - value0) / wn) + s * ((value2 - value3) / wn);
+					x = (1 - r)*((value3 - value0) / hn) + r * ((value2 - value1) / hn);
 
-					//printf("x: %g y:%g\n", x, y);
-
-					//x = (1 - s)*((value1 - value0) / hn) + s * ((value2 - value3) / hn);
-					//y = (1 - r)*((value3 - value0) / wn) + r * ((value2 - value1) / wn);	
-					
+					y *= 100;
+					x *= 100;
 				}
+
 				// compute magnitude of chosen vector dataset
 				magnitude = sqrt((x * x) + (y * y));
 				magnitude *= 10;
@@ -608,7 +602,7 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 				float gridy = (int)model_fft->clamp((double)(DIM + 1) * ((double)(posy) / (double)winHeight));
 				
 				// use nearest neigbor interpolation, take vx and vy of nearest grid point
-				if (vector_type != GRADIENT) {
+				if (vector_type == VELOCITY_FIELD || vector_type == FORCE_FIELD) {
 					x = model_fft->vx[(int)((gridy * DIM) + gridx)];
 					y = model_fft->vy[(int)((gridy * DIM) + gridx)];
 				}

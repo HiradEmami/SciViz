@@ -122,7 +122,7 @@ void visualize(void)
 			
 			view.visualize(DIM, &queueCopy.front(), &color, &DENSITY, &VELOCITY, &FORCE, &dataset,
 				&SCALAR_DENSITY, &SCALAR_VELOCITY, &SCALAR_FORCE, &dataset_scalar,
-				&VECTOR_VELOCITY, &VECTOR_FORCE, &dataset_vector, z, alpha - (i * alphastep), shift);
+				z, alpha - (i * alphastep), shift);
 
 
 			modelQueue.push(queueCopy.front());
@@ -132,7 +132,7 @@ void visualize(void)
 	else {
 		view.visualize(DIM, &model_fft, &color, &DENSITY, &VELOCITY, &FORCE, &dataset,
 			&SCALAR_DENSITY, &SCALAR_VELOCITY, &SCALAR_FORCE, &dataset_scalar,
-			&VECTOR_VELOCITY, &VECTOR_FORCE, &dataset_vector, -1, 1.0, 0);
+			-1, 1.0, 0);
 	}
 
 
@@ -302,15 +302,17 @@ int main(int argc, char **argv)
 			GLUI_Panel* field_panel = control_window->add_panel_to_panel(glyph_rollout, "Vector field");
 			GLUI_Panel* type_panel = control_window->add_panel_to_panel(glyph_rollout, "Glyph type");
 			GLUI_Panel* scalar_panel = control_window->add_panel_to_panel(glyph_rollout, "Scalar dataset");
-			GLUI_Panel* vector_panel = control_window->add_panel_to_panel(glyph_rollout, "Vector dataset");
+			
 
 			GLUI_RadioGroup* field_buttons = control_window->add_radiogroup_to_panel(field_panel, &view.vector_type);
 			GLUI_RadioGroup* type_buttons = control_window->add_radiogroup_to_panel(type_panel, &view.glyph_type);
 			GLUI_RadioGroup* scalar_buttons = control_window->add_radiogroup_to_panel(scalar_panel, &dataset_scalar);
-			GLUI_RadioGroup* vector_buttons = control_window->add_radiogroup_to_panel(vector_panel, &dataset_vector);
+		
 
-			control_window->add_radiobutton_to_group(field_buttons, "Standard");
-			control_window->add_radiobutton_to_group(field_buttons, "Gradient");
+			control_window->add_radiobutton_to_group(field_buttons, "Velocity");
+			control_window->add_radiobutton_to_group(field_buttons, "Force");
+			control_window->add_radiobutton_to_group(field_buttons, "Density Gradient");
+			control_window->add_radiobutton_to_group(field_buttons, "Velocity Gradient");
 
 			control_window->add_radiobutton_to_group(type_buttons, "Lines");
 			control_window->add_radiobutton_to_group(type_buttons, "Cones");
@@ -320,8 +322,7 @@ int main(int argc, char **argv)
 			control_window->add_radiobutton_to_group(scalar_buttons, "Velocity");
 			control_window->add_radiobutton_to_group(scalar_buttons, "Force");
 
-			control_window->add_radiobutton_to_group(vector_buttons, "Velocity");
-			control_window->add_radiobutton_to_group(vector_buttons, "Force");
+		
 
 
 			GLUI_Spinner* N_sampleX_spinner = control_window->add_spinner_to_panel(glyph_rollout, "Row samples", GLUI_SPINNER_INT, &view.glyph_samplesY);

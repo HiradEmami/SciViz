@@ -31,9 +31,9 @@ public:
 		double px1, double py1, double px2, double py2, double px3, double py3, double px, double py, double *p_velX,
 		double* p_velY, Model_fftw* model_fft);
 	void compute_velocity(double px, double py, double* p_velX, double* p_velY, Model_fftw* model_fft, int wn, int hn);
-	void visualize(int DIM, Model_fftw* model_fft, Model_color* color,int* DENSITY, int* VELOCITY, int* FORCE, int* dataset,
+	void visualize(int DIM, Model_fftw* model_fft, Model_color* color, int* DENSITY, int* VELOCITY, int* FORCE, int* dataset,
 		int* SCALAR_DENSITY, int* SCALAR_VELOCITY, int* SCALAR_FORCE, int* dataset_scalar,
-		int* VECTOR_VELOCITY, int* VECTOR_FORCE, int* dataset_vector, float z, float alpha, float shift);
+		float slicedepth, float a, float shift);
 	//parameters
 	int DIM;				//size of simulation grid
 	int   winWidth, winHeight;  //size of the graphics window, in pixels
@@ -63,8 +63,11 @@ public:
 	int glyph_samplesX;
 	int glyph_samplesY;
 	int vector_type;
-	int STANDARD;
-	int GRADIENT;
+	int VELOCITY_FIELD = 0;
+	int FORCE_FIELD = 1;
+	int DENSITY_GRADIENT_FIELD = 2;
+	int VELOCITY_GRADIENT_FIELD = 3;
+
 
 	//Streamline parameters
 	double MOUSEx, MOUSEy; //pixel value to draw the circle
