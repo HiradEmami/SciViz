@@ -67,6 +67,10 @@ float Model_color::clamp(float value) {
 	if (value<min) value = min; if (value>max) value = max;
 	return value;
 }
+float Model_color::scale(float value) {
+	value = (NCOLORS + 1)*(value - min) / (max - min);
+	return value;
+}
 
 float Model_color::scale(float value, float min, float max) {
 	if (value<min) value = min; if (value>max) value = max;

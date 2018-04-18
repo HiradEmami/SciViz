@@ -21,6 +21,7 @@ public:
 	
 
 	//functions
+	float scale(float value);
 	float clamp(float value);
 	void diverging(float value, float* R, float* G, float* B);
 	void blackwhite(float value, float* R, float* G, float* B);
