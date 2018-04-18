@@ -1,3 +1,4 @@
-﻿  Model_color.cpp
+﻿  View_visualization.cpp
+c:\users\hirad gorgoroth\documents\github\sciviz\smoke\smoke\view_visualization.cpp(129): warning C4101: 'f': unreferenced local variable
 Controller_keyboard.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/SAFESEH' specification
   Smoke.vcxproj -> C:\Users\Hirad Gorgoroth\Documents\GitHub\SciViz\Smoke\Debug\Smoke.exe

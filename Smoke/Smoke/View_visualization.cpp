@@ -263,10 +263,10 @@ void View_visualization::drawCircle(GLfloat cx, GLfloat cy, GLfloat radius) {
 	float i = 0.0f;
 
 	glBegin(GL_TRIANGLE_FAN);
-
-	glVertex2f(cx, cy); // Center
+	glColor3f(1.0, 0.0, 0.0);
+	glVertex3f(cx, cy,z); // Center
 	for (i = 0.0f; i <= 360; i++)
-		glVertex2f(radius*cos(M_PI * i / 180.0) + cx, radius*sin(M_PI * i / 180.0) + cy);
+		glVertex3f(radius*cos(M_PI * i / 180.0) + cx, radius*sin(M_PI * i / 180.0) + cy,z);
 
 	glEnd();
 
@@ -800,8 +800,8 @@ void View_visualization::compute_velocity(double px, double py, double* p_velX, 
 void View_visualization::display_Steamline(Model_fftw* model_fft, int cell_size, Model_color* color) {
 	if (mouse_clicked) {
 		cell_size = cell_size / 2;
-		//Draw the cicle for the first point
-		//drawCircle(MOUSEx, MOUSEy, 5);
+		
+		
 		//Calculating the other points
 		double VELOCITYx, VELOCITYy; //speed
 		VELOCITYx = 1;
@@ -813,7 +813,8 @@ void View_visualization::display_Steamline(Model_fftw* model_fft, int cell_size,
 		start_point_Y = MOUSEy;
 		start_grid_X = GRIDx;
 		start_grid_Y = GRIDy; 
-
+		//Draw the cicle for the first point
+		drawCircle(start_point_X, start_point_Y, 5);
 		//printf("StartX: %g StartY: %g GRIDx: %d GRIDy: %d\n", start_point_X, start_point_Y, start_grid_X, start_grid_Y);
 
 		float R, G, B;
