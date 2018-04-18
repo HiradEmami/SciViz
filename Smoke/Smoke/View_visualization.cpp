@@ -209,21 +209,27 @@ void View_visualization::draw_colorbar(Model_color* color) {
 	}
 	glEnd();
 	
-	float min, mid, max;
+	float min, mid, max,firsthalf, secondhalf;
 	if (use_clamp) {
 		min = color->min;
 		max = color->max;
 		mid = 0.5*(color->max + color->min);
+		firsthalf = mid - min / 2;
+		secondhalf = max - mid / 2;
 	}
 	else {
 		min = data_min;
 		max = data_max;
 		mid = 0.5*(data_min + data_max);
+		firsthalf = mid - min / 2;
+		secondhalf = max - mid / 2;
 	
 	}
 
 	draw_number(&*color, std::to_string(min), 5, colorbar_height + 5);
+	draw_number(&*color, std::to_string(firsthalf), (winWidth / 2 - winWidth / 8)/2, colorbar_height + 5);
 	draw_number(&*color, std::to_string(mid), winWidth / 2 - winWidth / 8, colorbar_height + 5);
+	draw_number(&*color, std::to_string(secondhalf),(winWidth / 2 - winWidth / 8)+(((winWidth - (winWidth / 5) - 20) - (winWidth / 2 - winWidth / 8)) / 2)  ,colorbar_height + 5);
 	draw_number(&*color, std::to_string(max), winWidth - (winWidth / 5) - 20, colorbar_height + 5);
 }
 void View_visualization::draw_number(Model_color* color, std::string value, float position, float height) {
