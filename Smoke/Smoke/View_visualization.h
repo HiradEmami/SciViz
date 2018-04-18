@@ -22,7 +22,7 @@ public:
 	void get_reference_coordinates(double px, double py, double v1x, double v1y, double v2x, double v2y,
 		double v4x, double v4y, double* r, double* s);
 	void draw_cones(float x, float y, fftw_real  wn, fftw_real hn, int i, int j, float magnitude);
-	void draw_arrows(float x, float y, fftw_real  wn, fftw_real hn, int i, int j, float magnitude);
+	void draw_arrows(float x, float y, fftw_real  wn, fftw_real hn, float i, float j, float magnitude);
 	void rotate(float x, float y, float* newx, float* newy, float pivotx, float pivoty, float angle);
 	void drawCircle(GLfloat cx, GLfloat cy, GLfloat radius);
 	void display_Steamline(Model_fftw* model_fft, int cell_size, Model_color* color);
@@ -32,7 +32,7 @@ public:
 	void compute_velocity(double px, double py, double* p_velX, double* p_velY, Model_fftw* model_fft, int wn, int hn);
 	void visualize(int DIM, Model_fftw* model_fft, Model_color* color,int* DENSITY, int* VELOCITY, int* FORCE, int* dataset,
 		int* SCALAR_DENSITY, int* SCALAR_VELOCITY, int* SCALAR_FORCE, int* dataset_scalar,
-		int* VECTOR_VELOCITY, int* VECTOR_FORCE, int* dataset_vector, float z, float alpha);
+		int* VECTOR_VELOCITY, int* VECTOR_FORCE, int* dataset_vector, float z, float alpha, float shift);
 	//parameters
 	int DIM;				//size of simulation grid
 	int   winWidth, winHeight;  //size of the graphics window, in pixels
@@ -51,6 +51,9 @@ public:
 	int colorbar_height;
 	int scalar_col;   
 	int use_clamp;
+
+	float data_min;
+	float data_max;
 	//glyph parameters
 	int glyph_type;
 	int CONES;

@@ -25,6 +25,9 @@ View_visualization::View_visualization()
 	 COLOR_DIVERGING = 4;
 	 COLOR_TWOCOLORS = 5;
 	 scalar_col = 2;
+	
+	 data_min = 100;
+	 data_max = 0;
 	 //glyph parameters
 	 glyph_type = 1;
 	 CONES = 0;
@@ -44,7 +47,7 @@ View_visualization::View_visualization()
 	 MOUSEy = 0;
 	 GRIDx = 0;
 	 GRIDy = 0;
-	 streamline_size = 50;
+	 streamline_size = 120;
 	 mouse_clicked = 0;
 	 streamline_finished = 1;
 
@@ -76,6 +79,10 @@ void View_visualization::set_colormap(Model_color* color, float vy, int dataset)
 
 	if (use_clamp) {
 		vy = color->clamp(vy);
+	}
+	else {
+		//printf("%g %g\n", data_min, data_max);
+		vy = color->scale(vy, data_min, data_max);
 	}
 	vy *= color->NCOLORS; vy = (int)vy; vy /= color->NCOLORS;
 	float R, G, B;
@@ -135,7 +142,13 @@ void View_visualization::direction_to_color(float scalar, int colormap, Model_co
 }
 //compute the rgb values given the current segment and the current colormap
 void View_visualization::compute_RGB(Model_color* color,float value, float* R, float* G, float* B) {
-	value = color->clamp(value);
+	if (use_clamp) {
+		value = color->clamp(value);
+	}
+	else {
+		value = color->scale(value, data_min, data_max);
+	}
+	
 	switch (scalar_col) {
 	case 0:
 		color->blackwhite(value, R, G, B);
@@ -173,23 +186,36 @@ void View_visualization::draw_colorbar(Model_color* color) {
 		color->rgb2hsv(R, G, B, &H, &S, &V);
 		color->hsv2rgb(H, S, V, &R, &G, &B);
 		glColor3f(R, G, B);
-		glVertex3f((i * segment_width), 0, cz);
-		glVertex3f((i * segment_width), colorbar_height, cz);
+		glVertex3f((i * segment_width), 0, z);
+		glVertex3f((i * segment_width), colorbar_height, z);
 
-		glVertex3f((i * segment_width) + segment_width, 0, cz);
-		glVertex3f((i * segment_width) + segment_width, colorbar_height, cz);
+		glVertex3f((i * segment_width) + segment_width, 0, z);
+		glVertex3f((i * segment_width) + segment_width, colorbar_height, z);
 
 	}
 	glEnd();
 	
-	draw_number(&*color, std::to_string(color->min), 5, colorbar_height + 5);
-	draw_number(&*color, std::to_string((color->max + color->min) / 2), winWidth / 2 - winWidth / 8, colorbar_height + 5);
-	draw_number(&*color, std::to_string(color->max), winWidth - (winWidth / 5) - 20, colorbar_height + 5);
+	float min, mid, max;
+	if (use_clamp) {
+		min = color->min;
+		max = color->max;
+		mid = 0.5*(color->max + color->min);
+	}
+	else {
+		min = data_min;
+		max = data_max;
+		mid = 0.5*(data_min + data_max);
+	
+	}
+
+	draw_number(&*color, std::to_string(min), 5, colorbar_height + 5);
+	draw_number(&*color, std::to_string(mid), winWidth / 2 - winWidth / 8, colorbar_height + 5);
+	draw_number(&*color, std::to_string(max), winWidth - (winWidth / 5) - 20, colorbar_height + 5);
 }
 void View_visualization::draw_number(Model_color* color, std::string value, float position, float height) {
 	glColor3f(1, 1, 1);
-	for (int i = 0; i < 3; i++) {
-		glRasterPos2f(position + (5*i), height);
+	for (int i = 0; i < 5; i++) {
+		glRasterPos3f(position + (7*i), height, z);
 		//glRasterPos2f(i*5, position);
 		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, value[i]);	
 	}	
@@ -276,49 +302,36 @@ void View_visualization::rotate(float x, float y, float* newx, float* newy, floa
 	*newy = *newy + pivoty;
 }
 
-void View_visualization::draw_arrows(float x, float y, fftw_real  wn, fftw_real hn, int i, int j, float magnitude) {
-	float angle;
-	// define the radius to be half of the cell width
-	float radius = wn / 2;
-	// define the location of the tip of the triangle
-	float scaled_top_x = (wn + (fftw_real)i * wn) + vec_scale * x;
-	float scaled_top_y = (hn + (fftw_real)j * hn) + vec_scale * y;
-	float top_x = (wn + (fftw_real)i * wn) + x;
-	float top_y = (hn + (fftw_real)j * hn) + y;
-	// define the location of the base of the triangle by rotation by +- 90 degrees
-	float left_x, left_y, right_x, right_y;
-	//rotate(top_x, top_y, &left_x, &left_y, wn + (fftw_real)i * wn, hn + (fftw_real)j * hn, M_PI / 2);
-	//rotate(top_x, top_y, &right_x, &right_y, wn + (fftw_real)i * wn, hn + (fftw_real)j * hn, -M_PI / 2);
-
+void View_visualization::draw_arrows(float x, float y, fftw_real  wn, fftw_real hn, float i, float j, float magnitude) {
+	
 	float base_scaling = 100;
+	//glPushMatrix();
+	//zglTranslatef(0, 400.0f, 0);
+	
+	
+	float base_x, base_y, tip_x, tip_y;
+	base_x = base_scaling * x;
+	base_y = base_scaling * y;
+	
+	tip_x = vec_scale * x;
+	tip_y = vec_scale * y;
+
+
+	//if (tip_x > wn) tip_x = wn;
+	//if (tip_y > hn) tip_y = hn;
+
+
+	//if (tip_x < wn/2) tip_x = wn/2;
+	//if (tip_y < hn/2) tip_y = hn/2;
+	//printf("x: %g y: %g\n", tip_x, tip_y);
+
+
 	glBegin(GL_TRIANGLES);
-		glVertex3f((wn + (fftw_real)i * wn) - base_scaling * y, (hn + (fftw_real)j * hn) + base_scaling * x, z);
-		glVertex3f((wn + (fftw_real)i * wn) + base_scaling * y, (hn + (fftw_real)j * hn) - base_scaling * x, z);
-		glVertex3f((wn + (fftw_real)i * wn) + vec_scale * x, (hn + (fftw_real)j * hn) + vec_scale * y, z);
+		glVertex3f(i - base_x, j + base_y, z);
+		glVertex3f(i + base_x, j - base_y, z);
+		glVertex3f(i + tip_x, j + tip_y, z);
 	glEnd();
-
-	/*printf("Left: %f %f\n", left_x, left_y);
-	printf("Right: %f %f\n", right_x, right_y);
-	printf("Top: %f %f\n", scaled_top_x, scaled_top_y);*/
-	/*printf("Left: %f %f\n", -top_y, top_x);
-	printf("Right: %f %f\n", top_y, -top_x);
-	printf("Top: %f %f\n", scaled_top_x, scaled_top_y);
-
-	//_sleep(100);
-
-	/*glPushMatrix();
-	// Translate glyph to middle of current cell
-	glTranslatef((wn + (fftw_real)i * wn) + vec_scale * x, (hn + (fftw_real)j * hn) + vec_scale * y, 0);
-	// Compute arctangent of vector y and x values
-	angle = atan2(y, x);
-	angle = 180 * angle / M_PI;
-	// Rotate arrowhead according to computed vector orientation
-	glRotatef(90 - angle, 0.0, 0.0, -1.0);
-	glRotatef(-90.0, 1.0, 0.0, 0.0); 
-	// Draw the solid cones with specified radius
-	glutSolidCone(radius / 2, (radius / 2) + (radius / 2 * magnitude), 3, 3);
-	glPopMatrix();
-	*/
+	//glPopMatrix();
 
 
 
@@ -326,11 +339,12 @@ void View_visualization::draw_arrows(float x, float y, fftw_real  wn, fftw_real 
 
 void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* color,int* DENSITY, int* VELOCITY, int* FORCE, int* dataset,
 	int* SCALAR_DENSITY, int* SCALAR_VELOCITY, int* SCALAR_FORCE, int* dataset_scalar,
-	int* VECTOR_VELOCITY, int* VECTOR_FORCE,int* dataset_vector, float slicedepth, float a)
+	int* VECTOR_VELOCITY, int* VECTOR_FORCE,int* dataset_vector, float slicedepth, float a, float shift)
 
 {
 	alpha = a;
 	z = slicedepth;
+
 	
 	//printf("%g\n", cz);
 
@@ -338,10 +352,15 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 		glShadeModel(GL_SMOOTH);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_BLEND);
-
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		gluLookAt(ex, ey, ez, cx, cy, cz, ux, uy, uz);
+		//glLoadIdentity();
+		glPushMatrix();
+		glTranslatef(shift, shift, 0.0f);
+		//glMatrixMode(GL_MODELVIEW);
+		//glLoadIdentity();
+		//gluLookAt(ex, ey, ez, cx, cy, cz, ux, uy, uz);
 		
 	}
 	
@@ -355,11 +374,54 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 	int idx0, idx1, idx2, idx3;
 	double px0, py0, px1, py1, px2, py2, px3, py3;
 	double r, s;
+	float value;
 
 	if (draw_smoke)
 	{
-	
-		
+		data_min = 100;
+		data_max = 0;
+		if (!use_clamp) {
+			//reset min and max values
+			// compute min and max of selected dataset
+			for (i = 0; i < DIM * 2 * (DIM / 2 + 1); i++) {
+				if (*dataset == *DENSITY) {
+					if (model_fft->rho[i] < data_min) {
+						data_min = model_fft->rho[i];
+					
+					}
+					if (model_fft->rho[i] > data_max) {
+						data_max = model_fft->rho[i];
+					}
+				}
+				else if (*dataset == *VELOCITY) {
+					value = sqrt((model_fft->vx[i] * model_fft->vx[i]) + (model_fft->vy[i] * model_fft->vy[i]));
+					value *= 10;
+					
+					if (value < data_min) {
+						data_min = value;
+					}
+					if (value > data_max) {
+						data_max = value;
+					}
+				}
+				else {
+					value = sqrt((model_fft->fx[i] * model_fft->fx[i]) + (model_fft->fy[i] * model_fft->fy[i]));
+					value *= 20;
+					if (value < data_min) {
+						data_min = value;
+					}
+					if (value > data_max) {
+						data_max = value;
+					}
+				}
+				if (data_max > 1) data_max = 1;
+				if (data_max < 0.01) data_max = 0;
+				if (data_min < 0) data_min = 0;
+
+				
+
+			}
+		}
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glBegin(GL_TRIANGLES);
 		for (j = 0; j < DIM - 1; j++)            //draw smoke
@@ -435,8 +497,12 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 		glEnd();
 	}
 	
+	
+	wn = (fftw_real)winWidth / (fftw_real)(glyph_samplesX + 1);   // Grid cell width
+	hn = (fftw_real)winHeight / (fftw_real)(glyph_samplesY + 1);  // Grid cell height
 	//draw vector field by using glyphs
-	float x, y, scalar, magnitude;
+	double x, y;
+	float scalar, magnitude;
 	if (draw_vecs)
 	{
 		for (j = 0; j < glyph_samplesY; j += 1)
@@ -507,26 +573,46 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 					value2 = sqrt((model_fft->vx[idx2] * model_fft->vx[idx2]) + (model_fft->vy[idx2] * model_fft->vy[idx2]));
 					value3 = sqrt((model_fft->vx[idx3] * model_fft->vx[idx3]) + (model_fft->vy[idx3] * model_fft->vy[idx3]));
 
-					x = (1 - s)*((model_fft->rho[idx1] - model_fft->rho[idx0]) / wn) + s * ((model_fft->rho[idx2] - model_fft->rho[idx3]) / wn);
-					y = (1 - r)*((model_fft->rho[idx3] - model_fft->rho[idx0]) / hn) + r * ((model_fft->rho[idx2] - model_fft->rho[idx1]) / hn);
+					y = (1 - s)*((model_fft->rho[idx1] - model_fft->rho[idx0]) / wn) + s * ((model_fft->rho[idx2] - model_fft->rho[idx3]) / wn);
+					x = (1 - r)*((model_fft->rho[idx3] - model_fft->rho[idx0]) / hn) + r * ((model_fft->rho[idx2] - model_fft->rho[idx1]) / hn);
 
+					//printf("x: %g y:%g\n", x, y);
 
 					//x = (1 - s)*((value1 - value0) / hn) + s * ((value2 - value3) / hn);
 					//y = (1 - r)*((value3 - value0) / wn) + r * ((value2 - value1) / wn);	
+					
 				}
 				// compute magnitude of chosen vector dataset
 				magnitude = sqrt((x * x) + (y * y));
 				magnitude *= 10;
 
+
+				//standard glyph position
+				float posx, posy;
+				posx = wn + (fftw_real)i * wn;
+				posy = hn + (fftw_real)j * hn;;
+			
+				// find grid cell that current glyph falls into
+				float gridx = (int)model_fft->clamp((double)(DIM + 1) * ((double)posx / (double)winWidth));
+				float gridy = (int)model_fft->clamp((double)(DIM + 1) * ((double)(posy) / (double)winHeight));
+				
+				// use nearest neigbor interpolation, take vx and vy of nearest grid point
+				if (vector_type != GRADIENT) {
+					x = model_fft->vx[(int)((gridy * DIM) + gridx)];
+					y = model_fft->vy[(int)((gridy * DIM) + gridx)];
+				}
+				
+			
+
 				// Color the glyphs
 				direction_to_color(scalar, scalar_col, *color);
 
 				if (glyph_type == CONES) {
-					draw_cones(x, y, wn, hn, i, j, magnitude);
+					draw_cones(x, y, wn, hn, posx, posy, magnitude);
 
 				}
 				else if (glyph_type == ARROWS) {
-					draw_arrows(x, y, wn, hn, i, j, magnitude);
+					draw_arrows(x, y, wn, hn, posx, posy, magnitude);
 				}
 			}
 		}
@@ -534,13 +620,16 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 	
 	//glDisable(GL_LIGHTING);
 	//draw color bar
-	//draw_colorbar(color);
+	if (!draw_slices) {
+		draw_colorbar(color);
+	}
 	
 	if (draw_streamline == 1) {
 		display_Steamline(&*model_fft, wn, color);
 		//drawCircle(MOUSEx, MOUSEy, 5);
 	}
 
+	glPopMatrix();
 
 
 
@@ -627,10 +716,10 @@ void View_visualization::compute_velocity(double px, double py, double* p_velX, 
 
 
 	// Compute indices of grid points and their coordinates
-	idx0 = (j * DIM) + i;
-	idx1 = ((j + 1) * DIM) + i;
-	idx2 = ((j + 1) * DIM) + (i + 1);
-	idx3 = (j * DIM) + (i + 1);
+	idx0 = (i * DIM) + j;
+	idx1 = ((i + 1) * DIM) + j;
+	idx2 = ((i + 1) * DIM) + (j + 1);
+	idx3 = (i * DIM) + (j + 1);
 
 	//printf("Indices: %d %d %d %d\n", idx0, idx1, idx2, idx3);
 
@@ -653,7 +742,7 @@ void View_visualization::compute_velocity(double px, double py, double* p_velX, 
 	//printf("X: %g %g %g %g\n", px0, px1, px2, px3);
 	//printf("Y: %g %g %g %g\n", py0, py1, py2, py3);
     //compute x and y velocity by interpolating by the four vertices of the cell
-	bilinear_interpolation(idx0, idx3, idx1, idx2, px0, py0,
+	bilinear_interpolation(idx0, idx1, idx2, idx3, px0, py0,
 		px1, py1, px2, py2, px3, py3, px, py, p_velX,
 		p_velY, model_fft);
 	
@@ -686,7 +775,7 @@ void View_visualization::display_Steamline(Model_fftw* model_fft, int cell_size,
 		CURRENTx = MOUSEx;
 		CURRENTy = MOUSEy;
 
-		int count = 1;
+		
 		
 		while(i < streamline_size && CURRENTx > 0 && CURRENTx < winWidth && CURRENTy > 0 && CURRENTy < winHeight)
 		{
@@ -694,7 +783,11 @@ void View_visualization::display_Steamline(Model_fftw* model_fft, int cell_size,
 			CURRENTx = MOUSEx;
 			CURRENTy = MOUSEy;
 			//do the operation to calculate the next point and return VELOCITYx and VELOCITYy
-			compute_velocity(CURRENTx, CURRENTy, &VELOCITYx, &VELOCITYy, &*model_fft, cell_size, cell_size);
+			//compute_velocity(CURRENTx, CURRENTy, &VELOCITYx, &VELOCITYy, &*model_fft, cell_size, cell_size);
+
+			// nearest neighbour interpolation
+			VELOCITYx = model_fft->vx[(GRIDy * DIM) + GRIDx];
+			VELOCITYy = model_fft->vy[(GRIDy * DIM) + GRIDx];
 			//normalize velocity
 			magnitude = sqrt((VELOCITYx * VELOCITYx) + (VELOCITYy * VELOCITYy));
 

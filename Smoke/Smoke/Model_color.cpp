@@ -68,6 +68,11 @@ float Model_color::clamp(float value) {
 	return value;
 }
 
+float Model_color::scale(float value, float min, float max) {
+	if (value<min) value = min; if (value>max) value = max;
+	return value;
+}
+
 void Model_color::interpolate(float value, float* R, float* G, float* B, float r1, float g1, float b1, float r2, float g2, float b2)
 {
 	*R = r1 * (1.0 - value) + value * r2;
@@ -115,7 +120,7 @@ void Model_color::heatmap(float value, float* R, float* G, float* B)
 		r1 = g1 = 1;
 		b1 = 0.1*value;
 		//interpolate between orange and yellow
-		interpolate((value - 0.5) * 1.5, R, G, B, r2, g2, b2, r1, g1, b1);
+		interpolate((value - 0.5) * 2.5, R, G, B, r2, g2, b2, r1, g1, b1);
 	}
 	else {
 		r1 = g1 = 1;

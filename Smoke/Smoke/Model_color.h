@@ -30,5 +30,6 @@ public:
 	void interpolate(float value, float* R, float* G, float* B, float r1, float g1, float b1, float r2, float g2, float b2);
 	void hsv2rgb(float h, float s, float v, float *r, float *g, float *b);
 	void rgb2hsv(float r, float g, float b, float *h, float *s, float *v);
+	float Model_color::scale(float value, float min, float max);
 };
 

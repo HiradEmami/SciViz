@@ -52,7 +52,8 @@ GLUI* control_window;
 //slice parameters
 queue<Model_fftw> modelQueue;
 
-float slice_size = 10;
+int slice_size = 20;
+int timer = 0;
 
 
 //do_one_simulation_step: Do one complete cycle of the simulation:
@@ -77,21 +78,27 @@ void do_one_simulation_step(void)
 			modelQueue.push(model_fft);
 		}
 		else {
-			modelQueue.pop();
-			//modelQueue.push(model_fft);
+			if (timer >= 0) {
+				timer = 0;
+				modelQueue.pop();
+				modelQueue.push(model_fft);
+			}
+			else {
+				timer++;
+			}
+			
 		}
 	}
 }
 
 void visualize(void)
 {
-	if (view.draw_slices) {
-
-		float z, zstep, alpha, alphastep;
+	if (view.draw_slices ) {
+		float z, zstep, alpha, alphastep, shift;
 		z = -3;
 		zstep = 0.5 / slice_size;
-		alpha = 0.7;
-		alphastep = 0.6 / slice_size;
+		alpha = 1.0;
+		alphastep = 0.9 / slice_size;
 		// create a temporary copy of the queue
 		int size = modelQueue.size();
 		queue<Model_fftw> queueCopy;
@@ -102,27 +109,30 @@ void visualize(void)
 			queueCopy.push(modelQueue.front());
 			modelQueue.pop();
 		}
-
+		
 		// visualize all the slices
+
 		for (int i = 0; i < size; i++) {
-
-			z = z + ((i * zstep));
-			alpha = alpha - (i * alphastep);
-
+			z = z - 0.2;
+			//z = z + ((i * zstep));
+			//alpha = alpha - (i * alphastep);
+			shift = (i * 150) + 700;
+			//printf("alphastep: %g\n", alphastep);
+			//printf("i: %d, alpha:%g\n", i, alpha - (i * alphastep));
+			
 			view.visualize(DIM, &queueCopy.front(), &color, &DENSITY, &VELOCITY, &FORCE, &dataset,
 				&SCALAR_DENSITY, &SCALAR_VELOCITY, &SCALAR_FORCE, &dataset_scalar,
-				&VECTOR_VELOCITY, &VECTOR_FORCE, &dataset_vector, z, alpha);
+				&VECTOR_VELOCITY, &VECTOR_FORCE, &dataset_vector, z, alpha - (i * alphastep), shift);
 
 
 			modelQueue.push(queueCopy.front());
 			queueCopy.pop();
 		}
-		
 	}
 	else {
 		view.visualize(DIM, &model_fft, &color, &DENSITY, &VELOCITY, &FORCE, &dataset,
 			&SCALAR_DENSITY, &SCALAR_VELOCITY, &SCALAR_FORCE, &dataset_scalar,
-			&VECTOR_VELOCITY, &VECTOR_FORCE, &dataset_vector, -1, 1.0);
+			&VECTOR_VELOCITY, &VECTOR_FORCE, &dataset_vector, -1, 1.0, 0);
 	}
 
 
@@ -210,8 +220,9 @@ int main(int argc, char **argv)
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 	int horizontal, vertical;
-	GetDesktopResolution(&horizontal, &vertical);
-	glutInitWindowSize(horizontal, vertical);
+	//GetDesktopResolution(&horizontal, &vertical);
+	//glutInitWindowSize(horizontal, vertical);
+	glutInitWindowSize(1000, 800);
 
 	main_window = glutCreateWindow("Real-time smoke simulation and visualization");
 	GLUI_Master.set_glutDisplayFunc(display);
@@ -231,15 +242,19 @@ int main(int argc, char **argv)
 	
 	// define the control window and all of its functions
 	//control_window = GLUI_Master.create_glui("Control",GLUI_SUBWINDOW_RIGHT);
-	control_window = GLUI_Master.create_glui_subwindow(main_window, GLUI_SUBWINDOW_RIGHT);
-
+	//control_window = GLUI_Master.create_glui_subwindow(main_window, GLUI_SUBWINDOW_RIGHT);
+	control_window = GLUI_Master.create_glui("Control panel");
 	
 
 	//--------------define all options for the COLORMAPPING assignment---------------------------//
 	GLUI_Rollout* color_rollout = control_window->add_rollout("Colors", false);
 
 		control_window->add_checkbox_to_panel(color_rollout, "Draw smoke", &view.draw_smoke);
-		control_window->add_checkbox_to_panel(color_rollout, "Clamp", &view.use_clamp);
+
+		GLUI_RadioGroup* clamp_scale_buttons = control_window->add_radiogroup_to_panel(color_rollout, &view.use_clamp);
+
+		control_window->add_radiobutton_to_group(clamp_scale_buttons, "Scale");
+		control_window->add_radiobutton_to_group(clamp_scale_buttons, "Clamp");
 
 		// add a panel for changing the dataset being colored
 		GLUI_Panel* dataset_panel = control_window->add_panel_to_panel(color_rollout, "Dataset");
@@ -314,10 +329,15 @@ int main(int argc, char **argv)
 	//--------------define all options for the STREAMLINE assignment---------------------------//	
 			GLUI_Rollout* streamline_rollout = control_window->add_rollout("Streamline", true);
 			control_window->add_checkbox_to_panel(streamline_rollout, "Draw streamline", &view.draw_streamline);
+			GLUI_Spinner* streamline_size = control_window->add_spinner_to_panel(streamline_rollout, "Streamline size", GLUI_SPINNER_INT, &view.streamline_size);
+			streamline_size->set_int_limits(2, 120);
 			
 	//--------------define the slices options--------------------------------------------------//
 			GLUI_Rollout* slices_rollout = control_window->add_rollout("Slices", true);
 			control_window->add_checkbox_to_panel(slices_rollout, "Draw slices", &view.draw_slices);
+			GLUI_Spinner* n_slices = control_window->add_spinner_to_panel(slices_rollout, "N slices", GLUI_SPINNER_INT, &slice_size);
+			n_slices->set_int_limits(1, 50);
+		
 
 			//--------------viewpoint options--------------------------------------------------//
 			GLUI_Rollout* view_rollout = control_window->add_rollout("Viewpoint", true);
