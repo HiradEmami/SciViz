@@ -29,7 +29,7 @@ View_visualization::View_visualization()
 	 data_min = 100;
 	 data_max = 0;
 	 //glyph parameters
-	 glyph_type = 0;
+	 glyph_type = 2;
 	 LINES = 0;
 	 CONES = 1;
 	 ARROWS = 2;
@@ -312,16 +312,39 @@ void View_visualization::rotate(float x, float y, float* newx, float* newy, floa
 
 void View_visualization::draw_arrows(float x, float y, fftw_real  wn, fftw_real hn, float i, float j, float magnitude) {
 	
-	float base_scaling = 100;
+	float base_scaling = 300;
 	//glPushMatrix();
 	//zglTranslatef(0, 400.0f, 0);
 	
 	float base_x, base_y, tip_x, tip_y;
-	base_x = base_scaling * x;
-	base_y = base_scaling * y;
+	
 	
 	tip_x = vec_scale * x;
 	tip_y = vec_scale * y;
+
+	if (tip_x > wn) {
+		tip_x = wn;
+		base_scaling /= 2;
+	}
+	if (tip_x < -1 * wn) {
+		tip_x = -1 * wn;
+		base_scaling /= 2;
+	}
+
+	if (tip_y > hn) {
+		tip_y = hn;
+		base_scaling /= 2;
+	}
+	if (tip_y < -1 * hn) {
+		tip_y = -1 * hn;
+		base_scaling /= 2;
+	}
+
+
+	base_x = base_scaling * x;
+	base_y = base_scaling * y;
+
+
 
 
 	glBegin(GL_TRIANGLES);
@@ -337,6 +360,7 @@ void View_visualization::draw_arrows(float x, float y, fftw_real  wn, fftw_real 
 
 void View_visualization::draw_hedgehogs(float x, float y, fftw_real  wn, fftw_real hn, float i, float j, float magnitude) {
 	// use x and y to draw corresponding direction of vector
+	glLineWidth(5);
 	glBegin(GL_LINES);
 	glVertex3f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn, z);
 	glVertex3f((wn + (fftw_real)i * wn) + (vec_scale * x), (hn + (fftw_real)j * hn) + (vec_scale * y), z);
