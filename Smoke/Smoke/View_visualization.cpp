@@ -214,8 +214,8 @@ void View_visualization::draw_colorbar(Model_color* color) {
 		min = color->min;
 		max = color->max;
 		mid = 0.5*(color->max + color->min);
-		firsthalf = mid - min / 2;
-		secondhalf = max - mid / 2;
+		firsthalf = min+((mid - min) / 2);
+		secondhalf = mid+((max - mid) / 2);
 	}
 	else {
 		min = data_min;
