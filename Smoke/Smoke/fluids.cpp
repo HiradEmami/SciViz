@@ -309,6 +309,7 @@ int main(int argc, char **argv)
 			control_window->add_radiobutton_to_group(field_buttons, "Standard");
 			control_window->add_radiobutton_to_group(field_buttons, "Gradient");
 
+			control_window->add_radiobutton_to_group(type_buttons, "Lines");
 			control_window->add_radiobutton_to_group(type_buttons, "Cones");
 			control_window->add_radiobutton_to_group(type_buttons, "Arrows");
 

@@ -21,6 +21,7 @@ public:
 	void drawLine(GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2);
 	void get_reference_coordinates(double px, double py, double v1x, double v1y, double v2x, double v2y,
 		double v4x, double v4y, double* r, double* s);
+	void draw_hedgehogs(float x, float y, fftw_real  wn, fftw_real hn, float i, float j, float magnitude);
 	void draw_cones(float x, float y, fftw_real  wn, fftw_real hn, int i, int j, float magnitude);
 	void draw_arrows(float x, float y, fftw_real  wn, fftw_real hn, float i, float j, float magnitude);
 	void rotate(float x, float y, float* newx, float* newy, float pivotx, float pivoty, float angle);
@@ -56,6 +57,7 @@ public:
 	float data_max;
 	//glyph parameters
 	int glyph_type;
+	int LINES;
 	int CONES;
 	int ARROWS;
 	int glyph_samplesX;
@@ -63,6 +65,7 @@ public:
 	int vector_type;
 	int STANDARD;
 	int GRADIENT;
+
 	//Streamline parameters
 	double MOUSEx, MOUSEy; //pixel value to draw the circle
 	int GRIDx, GRIDy; //Grid value that we get by clicking  

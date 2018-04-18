@@ -29,9 +29,10 @@ View_visualization::View_visualization()
 	 data_min = 100;
 	 data_max = 0;
 	 //glyph parameters
-	 glyph_type = 1;
-	 CONES = 0;
-	 ARROWS = 1;
+	 glyph_type = 0;
+	 LINES = 0;
+	 CONES = 1;
+	 ARROWS = 2;
 
 	 //draw normal vector glyphs or gradient glyphs
 	 vector_type = 0;
@@ -308,13 +309,14 @@ void View_visualization::draw_arrows(float x, float y, fftw_real  wn, fftw_real 
 	//glPushMatrix();
 	//zglTranslatef(0, 400.0f, 0);
 	
-	
 	float base_x, base_y, tip_x, tip_y;
 	base_x = base_scaling * x;
 	base_y = base_scaling * y;
 	
 	tip_x = vec_scale * x;
 	tip_y = vec_scale * y;
+
+	
 
 
 	//if (tip_x > wn) tip_x = wn;
@@ -336,6 +338,15 @@ void View_visualization::draw_arrows(float x, float y, fftw_real  wn, fftw_real 
 
 
 }
+
+void View_visualization::draw_hedgehogs(float x, float y, fftw_real  wn, fftw_real hn, float i, float j, float magnitude) {
+	// use x and y to draw corresponding direction of vector
+	glBegin(GL_LINE);
+	glVertex3f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn, z);
+	glVertex3f((wn + (fftw_real)i * wn) + vec_scale * x, (hn + (fftw_real)j * hn) + vec_scale * y, z);
+	glEnd();
+}
+
 
 void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* color,int* DENSITY, int* VELOCITY, int* FORCE, int* dataset,
 	int* SCALAR_DENSITY, int* SCALAR_VELOCITY, int* SCALAR_FORCE, int* dataset_scalar,
@@ -535,10 +546,7 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 						y = model_fft->fy[idx];
 					}
 
-					// use x and y to draw corresponding direction of vector
-					//glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
-					//glVertex2f((wn + (fftw_real)i * wn) + (vec_scale + (magnitude * vec_scale)) * x, (hn + (fftw_real)j * hn) + (vec_scale + (magnitude * vec_scale)) * y);
-					//glVertex2f((wn + (fftw_real)i * wn) + view.vec_scale  * x, (hn + (fftw_real)j * hn) + view.vec_scale * y);
+					
 				}
 
 				// draw the gradient of either density or velocity magnitude
@@ -590,7 +598,7 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 				//standard glyph position
 				float posx, posy;
 				posx = wn + (fftw_real)i * wn;
-				posy = hn + (fftw_real)j * hn;;
+				posy = hn + (fftw_real)j * hn;
 			
 				// find grid cell that current glyph falls into
 				float gridx = (int)model_fft->clamp((double)(DIM + 1) * ((double)posx / (double)winWidth));
@@ -607,9 +615,11 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 				// Color the glyphs
 				direction_to_color(scalar, scalar_col, *color);
 
-				if (glyph_type == CONES) {
+				if (glyph_type == LINES) {
+					draw_hedgehogs(x, y, wn, hn, posx, posy, magnitude);
+				}
+				else if (glyph_type == CONES) {
 					draw_cones(x, y, wn, hn, posx, posy, magnitude);
-
 				}
 				else if (glyph_type == ARROWS) {
 					draw_arrows(x, y, wn, hn, posx, posy, magnitude);
