@@ -1,5 +1,18 @@
-﻿  fluids.cpp
+﻿  View_visualization.cpp
+c:\users\paul\desktop\ai\blockc\scientificvisualization\sciviz\smoke\smoke\view_visualization.cpp(138): warning C4101: 'f': unreferenced local variable
+  Model_fftw.cpp
+  fluids.cpp
 c:\users\paul\desktop\ai\blockc\scientificvisualization\sciviz\smoke\smoke\fluids.cpp(80): warning C4018: '<=': signed/unsigned mismatch
+  Model_color.cpp
+  controller_viewInteraction.cpp
+c:\users\paul\desktop\ai\blockc\scientificvisualization\sciviz\smoke\smoke\controller_viewinteraction.cpp(75): warning C4101: 'len': unreferenced local variable
+c:\users\paul\desktop\ai\blockc\scientificvisualization\sciviz\smoke\smoke\controller_viewinteraction.cpp(75): warning C4101: 'dy': unreferenced local variable
+c:\users\paul\desktop\ai\blockc\scientificvisualization\sciviz\smoke\smoke\controller_viewinteraction.cpp(75): warning C4101: 'Y': unreferenced local variable
+c:\users\paul\desktop\ai\blockc\scientificvisualization\sciviz\smoke\smoke\controller_viewinteraction.cpp(75): warning C4101: 'dx': unreferenced local variable
+c:\users\paul\desktop\ai\blockc\scientificvisualization\sciviz\smoke\smoke\controller_viewinteraction.cpp(75): warning C4101: 'X': unreferenced local variable
+  Controller_keyboard.cpp
+  Generating Code...
+  LINK : C:\Users\Paul\Desktop\AI\BlockC\ScientificVisualization\SciViz\Smoke\Debug\Smoke.exe not found or not built by the last incremental link; performing full link
 Controller_keyboard.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/SAFESEH' specification
 glui32.lib(algebra3.obj) : warning LNK4099: PDB 'GLUI.pdb' was not found with 'glui32.lib(algebra3.obj)' or at 'C:\Users\Paul\Desktop\AI\BlockC\ScientificVisualization\SciViz\Smoke\Debug\GLUI.pdb'; linking object as if no debug info
 glui32.lib(arcball.obj) : warning LNK4099: PDB 'GLUI.pdb' was not found with 'glui32.lib(arcball.obj)' or at 'C:\Users\Paul\Desktop\AI\BlockC\ScientificVisualization\SciViz\Smoke\Debug\GLUI.pdb'; linking object as if no debug info
