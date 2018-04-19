@@ -87,7 +87,7 @@ void Model_color::interpolate(float value, float* R, float* G, float* B, float r
 //rainbow: Implements a color palette, mapping the scalar 'value' to a rainbow color RGB
 void Model_color::rainbow(float value, float* R, float* G, float* B)
 {
-
+	
 	const float dx = 0.8;
 	value = (6 - 2 * dx)*value + dx;
 	*R = fmax(0.0, (3 - fabs(value - 4) - fabs(value - 5)));
@@ -96,13 +96,13 @@ void Model_color::rainbow(float value, float* R, float* G, float* B)
 }
 void Model_color::grayscale(float value, float* R, float* G, float* B)
 {
-	value = value / 3;
+	
 	*R = *G = *B = value;
 }
 
 void Model_color::heatmap(float value, float* R, float* G, float* B)
 {
-
+	
 	float r1, g1, b1, r2, g2, b2;
 	//orange 
 	r2 = 0.9*value;
@@ -147,7 +147,8 @@ void Model_color::heatmap(float value, float* R, float* G, float* B)
 
 void Model_color::blackwhite(float value, float* R, float* G, float* B)
 {
-	*R = *G = *B = value;
+	interpolate(value, &*R, &*G, &*B, 0, 0, 0, 1, 1, 1);
+	NCOLORS = 1;
 }
 
 
@@ -155,6 +156,7 @@ void Model_color::blackwhite(float value, float* R, float* G, float* B)
 
 void Model_color::diverging(float value, float* R, float* G, float* B)
 {
+	
 	float r1, g1, b1, r2, g2, b2;
 	//white 
 	r2 = g2 = b2 = 1;

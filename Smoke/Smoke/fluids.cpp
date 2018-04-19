@@ -56,6 +56,7 @@ int slice_size = 6;
 int timer = 0;
 
 float alpha = 0.5f; 
+float spacing = 150;
 
 
 //do_one_simulation_step: Do one complete cycle of the simulation:
@@ -80,7 +81,7 @@ void do_one_simulation_step(void)
 			modelQueue.push(model_fft);
 		}
 		else {
-			if (timer >= 0) {
+			if (timer >= 100000) {
 				timer = 0;
 				modelQueue.pop();
 				modelQueue.push(model_fft);
@@ -117,7 +118,7 @@ void visualize(void)
 			z = z - 0.2;
 			//z = z + ((i * zstep));
 			//alpha = alpha - (i * alphastep);
-			shift = (i * 150) + 700;
+			shift = (i * spacing) + 700;
 			//printf("alphastep: %g\n", alphastep);
 			//printf("i: %d, alpha:%g\n", i, alpha - (i * alphastep));
 			
@@ -279,7 +280,7 @@ int main(int argc, char **argv)
 
 		GLUI_Rollout* color_options_rollout = control_window->add_rollout_to_panel(color_rollout, "Color options", true);
 		GLUI_Spinner* N_color_spinner = control_window->add_spinner_to_panel(color_options_rollout, "Colorbands", GLUI_SPINNER_INT, &color.NCOLORS);
-		N_color_spinner->set_float_limits(2,255);
+		N_color_spinner->set_float_limits(1,255);
 		/*GLUI_RadioGroup* scale_clamp = control_window->add_radiogroup_to_panel(color_rollout, &view.bool_clamp_scale);
 		control_window->add_radiobutton_to_group(scale_clamp, "Use Scaling");
 		control_window->add_radiobutton_to_group(scale_clamp, "Use Clamping");*/
@@ -304,12 +305,12 @@ int main(int argc, char **argv)
 			control_window->add_checkbox_to_panel(glyph_rollout, "Color glyphs", &view.color_dir);
 
 			GLUI_Panel* field_panel = control_window->add_panel_to_panel(glyph_rollout, "Vector field");
-			GLUI_Panel* type_panel = control_window->add_panel_to_panel(glyph_rollout, "Glyph type");
+			//GLUI_Panel* type_panel = control_window->add_panel_to_panel(glyph_rollout, "Glyph type");
 			GLUI_Panel* scalar_panel = control_window->add_panel_to_panel(glyph_rollout, "Scalar dataset");
 			
 
 			GLUI_RadioGroup* field_buttons = control_window->add_radiogroup_to_panel(field_panel, &view.vector_type);
-			GLUI_RadioGroup* type_buttons = control_window->add_radiogroup_to_panel(type_panel, &view.glyph_type);
+			//GLUI_RadioGroup* type_buttons = control_window->add_radiogroup_to_panel(type_panel, &view.glyph_type);
 			GLUI_RadioGroup* scalar_buttons = control_window->add_radiogroup_to_panel(scalar_panel, &dataset_scalar);
 		
 
@@ -318,9 +319,9 @@ int main(int argc, char **argv)
 			control_window->add_radiobutton_to_group(field_buttons, "Density Gradient");
 			control_window->add_radiobutton_to_group(field_buttons, "Velocity Gradient");
 
-			control_window->add_radiobutton_to_group(type_buttons, "Lines");
+			/*control_window->add_radiobutton_to_group(type_buttons, "Lines");
 			control_window->add_radiobutton_to_group(type_buttons, "Cones");
-			control_window->add_radiobutton_to_group(type_buttons, "Arrows");
+			control_window->add_radiobutton_to_group(type_buttons, "Arrows");*/
 
 			control_window->add_radiobutton_to_group(scalar_buttons, "Density");
 			control_window->add_radiobutton_to_group(scalar_buttons, "Velocity");
@@ -350,6 +351,10 @@ int main(int argc, char **argv)
 			GLUI_Spinner* alpha_slider = control_window->add_spinner_to_panel(slices_rollout, "Transparency", GLUI_SPINNER_FLOAT, &alpha);
 			alpha_slider->set_float_limits(0.1, 1);
 			alpha_slider->set_speed(1);
+
+			GLUI_Spinner* spacing_spinner = control_window->add_spinner_to_panel(slices_rollout, "Spacing", GLUI_SPINNER_FLOAT, &spacing);
+		//	alpha_slider->set_float_limits(0.1, 1);
+		//	alpha_slider->set_speed(1);
 
 			
 		

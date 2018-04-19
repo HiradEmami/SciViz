@@ -73,7 +73,7 @@ View_visualization::View_visualization(float width, float height)
 	 //clamp_scale
 	 //bool_clamp_scale = 0;
 	 
-	
+	 
 }
 
 //------ VISUALIZATION CODE STARTS HERE -----------------------------------------------------------------
@@ -218,21 +218,27 @@ void View_visualization::draw_colorbar(Model_color* color) {
 	}
 	glEnd();
 	
-	float min, mid, max;
+	float min, mid, max,firsthalf, secondhalf;
 	if (use_clamp) {
 		min = color->min;
 		max = color->max;
 		mid = 0.5*(color->max + color->min);
+		firsthalf = min+((mid - min) / 2);
+		secondhalf = mid+((max - mid) / 2);
 	}
 	else {
 		min = data_min;
 		max = data_max;
 		mid = 0.5*(data_min + data_max);
+		firsthalf = mid - min / 2;
+		secondhalf = max - mid / 2;
 	
 	}
 
 	draw_number(&*color, std::to_string(min), 5, colorbar_height + 5);
+	draw_number(&*color, std::to_string(firsthalf), (winWidth / 2 - winWidth / 8)/2, colorbar_height + 5);
 	draw_number(&*color, std::to_string(mid), winWidth / 2 - winWidth / 8, colorbar_height + 5);
+	draw_number(&*color, std::to_string(secondhalf),(winWidth / 2 - winWidth / 8)+(((winWidth - (winWidth / 5) - 20) - (winWidth / 2 - winWidth / 8)) / 2)  ,colorbar_height + 5);
 	draw_number(&*color, std::to_string(max), winWidth - (winWidth / 5) - 20, colorbar_height + 5);
 }
 void View_visualization::draw_number(Model_color* color, std::string value, float position, float height) {
@@ -341,21 +347,26 @@ void View_visualization::draw_arrows(float x, float y, fftw_real  wn, fftw_real 
 
 	if (tip_x > max_length_x) {
 		tip_x = max_length_x;
-		base_scaling /= 2;
+		base_scaling /= 1.1;
 	}
 	if (tip_x < -1 * max_length_x) {
 		tip_x = -1 * max_length_x;
-		base_scaling /= 2;
+		base_scaling /= 1.1;
 	}
 
 	if (tip_y > max_length_y) {
 		tip_y = max_length_y;
-		base_scaling /= 2;
+		base_scaling /= 1.1;
 	}
 	if (tip_y < -1 * max_length_y) {
 		tip_y = -1 * max_length_y;
+		base_scaling /= 1.1;
+	}
+
+	if (vector_type == DENSITY_GRADIENT_FIELD || vector_type == VELOCITY_GRADIENT_FIELD) {
 		base_scaling /= 2;
 	}
+
 
 	/*if (abs(tip_x) < wn/2) {
 		if (tip_x <= 0) {
@@ -571,6 +582,8 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 	//draw vector field by using glyphs
 	double x, y;
 	float scalar, magnitude;
+
+
 	if (draw_vecs)
 	{
 		for (j = 0; j < glyph_samplesY; j += 1)
@@ -590,7 +603,7 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 					scalar = (model_fft->fx[idx] * model_fft->fx[idx]) + (model_fft->fy[idx] * model_fft->fy[idx]);
 					scalar *= 1000;
 				}
-
+				
 
 				idx0 = (j * DIM) + i;
 				idx1 = ((j + 1) * DIM) + i;
@@ -659,6 +672,8 @@ void View_visualization::visualize(int DIM, Model_fftw* model_fft,Model_color* c
 				//standard, uniform glyph sampling
 				posx = wn + (fftw_real)i * wn;
 				posy = hn + (fftw_real)j * hn;
+
+
 				
 
 			
